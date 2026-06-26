@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#C62828" />
+  <title>Utförandekontroll – Demo</title>
+  <meta name="description" content="Helt offline demo för brandbesiktning och utförandekontroll." />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Utförandekontroll" />
+
+  <link rel="stylesheet" href="styles/app.css" />
+
+  <!-- Vendrade bibliotek som UMD-globaler. Laddas LOKALT – inget internet krävs.
+       Klassiska script körs i ordning före den deferrade modulen nedan, så
+       window.React / ReactDOM / htm / jspdf är redo när src/main.js startar. -->
+  <script src="vendor/react.production.min.js"></script>
+  <script src="vendor/react-dom.production.min.js"></script>
+  <script src="vendor/htm.umd.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div id="root">
+    <div class="splash">
+      <div class="splash-mark" aria-hidden="true"></div>
+      <p>Laddar demo…</p>
+    </div>
+  </div>
+
+  <noscript>Den här demon kräver JavaScript.</noscript>
+
+  <!-- idb laddas som ES-modul inifrån src/ (idb v7 är ESM-only). -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
