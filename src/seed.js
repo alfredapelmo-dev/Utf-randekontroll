@@ -21,7 +21,7 @@ async function fetchBlob(url) {
   return res.blob();
 }
 
-function mkDev(projektGuid, title, besk, sev, status, ansvarig, x, y, fotoRefs) {
+function mkDev(projektGuid, ritningId, title, besk, sev, status, ansvarig, x, y, fotoRefs) {
   const now = nowIso();
   return {
     AvvikelseGuid: newGuid(),
@@ -31,7 +31,7 @@ function mkDev(projektGuid, title, besk, sev, status, ansvarig, x, y, fotoRefs) 
     Allvarlighetsgrad: sev,
     Status: status,
     Ansvarig: ansvarig,
-    RitningId: DEMO_DRAWING_ID,
+    RitningId: ritningId,
     KoordinatX: x,
     KoordinatY: y,
     FotoReferenser: fotoRefs ? fotoRefs.slice() : [],
@@ -49,18 +49,43 @@ export async function seedIfEmpty() {
   const db = await getDB();
   if ((await db.count('projects')) > 0) return false;
 
-  // Ritning (bundlad PNG) som Blob i IndexedDB.
+  // Projekt
+  const p1 = newGuid(), p2 = newGuid(), p3 = newGuid();
+
+  // Ritningar (bundlade PNG:er) som Blob i IndexedDB. Varje projekt har FLERA
+  // planritningar, kopplade via ProjektGuid. Planfilerna delas mellan projekt
+  // (demobilder) men varje projekt+plan får en egen ritnings-post med eget
+  // RitningId = `${ProjektGuid}-${plan}`.
+  const PLAN_FILES = {
+    A: 'drawing-plan-a.png', B: 'drawing-plan-b.png',
+    C: 'drawing-plan-c.png', D: 'drawing-plan-d.png',
+  };
+  const PLAN_NAMES = {
+    A: 'Plan 1 – Entréplan', B: 'Plan 2 – Kontor',
+    C: 'Källarplan', D: 'Lager / Lastkaj',
+  };
+  const projectPlans = {
+    [p1]: ['A', 'B', 'C'],
+    [p2]: ['B', 'D'],
+    [p3]: ['D', 'C'],
+  };
+  const rid = (pg, plan) => `${pg}-${plan}`;
   try {
-    const blob = await fetchBlob('assets/drawing-sample.png');
-    await db.put('drawings', {
-      RitningId: DEMO_DRAWING_ID, namn: 'Plan 1', blob, bredd: 1600, hojd: 1120,
-    });
+    const blobs = {};
+    for (const k of Object.keys(PLAN_FILES)) blobs[k] = await fetchBlob(`assets/${PLAN_FILES[k]}`);
+    const tx = db.transaction('drawings', 'readwrite');
+    for (const pg of [p1, p2, p3]) {
+      for (const plan of projectPlans[pg]) {
+        await tx.store.put({
+          RitningId: rid(pg, plan), ProjektGuid: pg, namn: PLAN_NAMES[plan],
+          blob: blobs[plan], bredd: 1600, hojd: 1120, Created: nowIso(),
+        });
+      }
+    }
+    await tx.done;
   } catch (e) {
     console.warn('[seed] ritning:', e);
   }
-
-  // Projekt
-  const p1 = newGuid(), p2 = newGuid(), p3 = newGuid();
   const projects = [
     {
       ProjektGuid: p1, Title: 'Kv. Almen 3 – Ombyggnad', Status: 'Pågående',
@@ -94,12 +119,12 @@ export async function seedIfEmpty() {
 
   // Avvikelser (koordinater relativt 0.0–1.0 av ritningens bredd/höjd).
   const devs = [
-    mkDev(p1, 'Blockerad utrymningsväg', 'Pallar står placerade i utrymningsväg vid entrén.', 'Hög', 'Öppen', PERSONS.johan, 0.31, 0.88),
-    mkDev(p1, 'Brandsläckare saknas', 'Handbrandsläckare saknas vid konferensrummet.', 'Medel', 'Åtgärdad', PERSONS.sara, 0.74, 0.22, ['photo-extinguisher.jpg']),
-    mkDev(p1, 'Dörrstängare ur funktion', 'Branddörr mellan kontor och teknik stänger inte fullt.', 'Låg', 'Verifierad', PERSONS.johan, 0.66, 0.66, ['photo-door.jpg']),
-    mkDev(p1, 'Otätad genomföring', 'Kabelgenomföring i brandcellsgräns är ej tätad.', 'Kritisk', 'Öppen', PERSONS.sara, 0.50, 0.50),
-    mkDev(p2, 'Felaktig skyltning', 'Efterlysande hänvisningsskylt saknas vid trapphus.', 'Medel', 'Öppen', PERSONS.johan, 0.40, 0.30),
-    mkDev(p2, 'Sprinkler ej trycksatt', 'Sektion B var ej trycksatt vid kontroll.', 'Hög', 'Åtgärdad', PERSONS.erik, 0.62, 0.55),
+    mkDev(p1, rid(p1, 'A'), 'Blockerad utrymningsväg', 'Pallar står placerade i utrymningsväg vid entrén.', 'Hög', 'Öppen', PERSONS.johan, 0.31, 0.88),
+    mkDev(p1, rid(p1, 'A'), 'Brandsläckare saknas', 'Handbrandsläckare saknas vid konferensrummet.', 'Medel', 'Åtgärdad', PERSONS.sara, 0.74, 0.22, ['photo-extinguisher.jpg']),
+    mkDev(p1, rid(p1, 'A'), 'Dörrstängare ur funktion', 'Branddörr mellan kontor och teknik stänger inte fullt.', 'Låg', 'Verifierad', PERSONS.johan, 0.66, 0.66, ['photo-door.jpg']),
+    mkDev(p1, rid(p1, 'B'), 'Otätad genomföring', 'Kabelgenomföring i brandcellsgräns är ej tätad (Plan 2).', 'Kritisk', 'Öppen', PERSONS.sara, 0.50, 0.50),
+    mkDev(p2, rid(p2, 'B'), 'Felaktig skyltning', 'Efterlysande hänvisningsskylt saknas vid trapphus.', 'Medel', 'Öppen', PERSONS.johan, 0.40, 0.30),
+    mkDev(p2, rid(p2, 'D'), 'Sprinkler ej trycksatt', 'Sektion B var ej trycksatt vid kontroll (Lager).', 'Hög', 'Åtgärdad', PERSONS.erik, 0.62, 0.55),
   ];
   {
     const tx = db.transaction('deviations', 'readwrite');

@@ -60,7 +60,12 @@ export function Protocol({ repository, project, role, onClose, toast }) {
       for (const d of deviations) {
         photosByDev[d.AvvikelseGuid] = await repository.listPhotos(d.AvvikelseGuid);
       }
-      const drawing = await repository.getDrawing('plan1.png');
+      // Använd projektets första ritning (faller tillbaka på avvikelsens RitningId).
+      const projDrawings = await repository.listDrawingsForProject(project.ProjektGuid);
+      let drawing = projDrawings[0] || null;
+      if (!drawing && deviations[0] && deviations[0].RitningId) {
+        drawing = await repository.getDrawing(deviations[0].RitningId);
+      }
       const signatureDataUrl = hasSign ? canvasRef.current.toDataURL('image/png') : null;
 
       const res = await buildProtocolPdf({

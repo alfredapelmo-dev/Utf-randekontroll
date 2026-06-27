@@ -2,7 +2,7 @@
    vid installation. Allt är lokalt; ingen nätverkstrafik krävs efter första
    laddning. (Registreras endast i säker kontext: https eller localhost.) */
 
-const CACHE = 'utfk-demo-v8';
+const CACHE = 'utfk-demo-v12';
 
 const PRECACHE = [
   './',
@@ -18,6 +18,7 @@ const PRECACHE = [
   'vendor/wrap-idb-value.js',
 
   'src/main.js',
+  'src/version.js',
   'src/ui.js',
   'src/models.js',
   'src/db.js',
@@ -28,12 +29,19 @@ const PRECACHE = [
   'src/components/App.js',
   'src/components/ProjectList.js',
   'src/components/ProjectBrowser.js',
+  'src/components/ProjectView.js',
+  'src/components/ProjectInfoForm.js',
+  'src/components/SymbolPicker.js',
   'src/components/ArchiveDialog.js',
   'src/components/DrawingView.js',
   'src/components/DeviationForm.js',
   'src/components/Protocol.js',
 
   'assets/drawing-sample.png',
+  'assets/drawing-plan-a.png',
+  'assets/drawing-plan-b.png',
+  'assets/drawing-plan-c.png',
+  'assets/drawing-plan-d.png',
   'assets/photo-extinguisher.jpg',
   'assets/photo-door.jpg',
   'assets/icons/icon-192.png',

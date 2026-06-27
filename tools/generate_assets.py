@@ -49,84 +49,111 @@ def center_text(d, box, text, f, fill):
            text, font=f, fill=fill)
 
 
-# ---------------------------------------------------------------- planritning
-def make_drawing():
-    W, H = 1600, 1120
+# ---------------------------------------------------------------- planritningar
+# Konfigurationsdriven planritare. Varje layout beskrivs av inner-väggar,
+# dörröppningar, rumsetiketter och en titel. Yttervägg + norrpil + skalstock +
+# titelruta ritas alltid. Samtliga är fiktiva demoplaner.
+W, H = 1600, 1120
+MARGIN = 90
+TWALL = 14
+OX0, OY0, OX1, OY1 = MARGIN, MARGIN, W - MARGIN, H - MARGIN
+
+
+def draw_plan(cfg):
     img = Image.new("RGB", (W, H), (252, 252, 250))
     d = ImageDraw.Draw(img)
 
-    # svag rutnät-bakgrund (som ett ritningsark)
     for x in range(0, W, 40):
         d.line([(x, 0), (x, H)], fill=GRID, width=1)
     for y in range(0, H, 40):
         d.line([(0, y), (W, y)], fill=GRID, width=1)
 
-    m = 90
-    ox0, oy0, ox1, oy1 = m, m, W - m, H - m
-    tw = 14  # väggtjocklek
-
     def wall(x0, y0, x1, y1):
-        d.rectangle([x0 - tw / 2, y0 - tw / 2, x1 + tw / 2, y1 + tw / 2], fill=WALL)
+        d.rectangle([x0 - TWALL / 2, y0 - TWALL / 2, x1 + TWALL / 2, y1 + TWALL / 2], fill=WALL)
 
-    # yttervägg
-    wall(ox0, oy0, ox1, oy0)  # topp
-    wall(ox0, oy1, ox1, oy1)  # botten
-    wall(ox0, oy0, ox0, oy1)  # vänster
-    wall(ox1, oy0, ox1, oy1)  # höger
-
-    # innerväggar
-    vx = 600
-    hx = 1060
-    wall(vx, oy0, vx, oy1)            # lodrät vägg vänster zon | höger zon
-    wall(vx, 560, ox1, 560)          # vågrät vägg i höger zon
-    wall(hx, 560, hx, oy1)           # lodrät vägg höger-nedre
-
-    # dörröppningar (vita gap + karmstreck)
     def door(x0, y0, x1, y1):
-        d.rectangle([x0 - tw / 2 - 1, y0 - tw / 2 - 1, x1 + tw / 2 + 1, y1 + tw / 2 + 1],
+        d.rectangle([x0 - TWALL / 2 - 1, y0 - TWALL / 2 - 1, x1 + TWALL / 2 + 1, y1 + TWALL / 2 + 1],
                     fill=(252, 252, 250))
         d.line([x0, y0, x1, y1], fill=(150, 150, 150), width=2)
 
-    door(vx, 470, vx, 560)           # vänster<->höger
-    door(800, 560, 900, 560)         # konferens<->kontor
-    door(hx, 740, hx, 830)           # kontor<->teknik
-    # entrédörr i nedre yttervägg
-    door(330, oy1, 470, oy1)
+    # yttervägg
+    wall(OX0, OY0, OX1, OY0)
+    wall(OX0, OY1, OX1, OY1)
+    wall(OX0, OY0, OX0, OY1)
+    wall(OX1, OY0, OX1, OY1)
 
-    # rumsetiketter
+    for (x0, y0, x1, y1) in cfg.get("walls", []):
+        wall(x0, y0, x1, y1)
+    for (x0, y0, x1, y1) in cfg.get("doors", []):
+        door(x0, y0, x1, y1)
+
     fr = font(40, bold=True)
     fsub = font(26)
-    labels = [
-        ("LAGER", (vx + ox0) / 2, (oy0 + oy1) / 2),
-        ("KONFERENS", (vx + ox1) / 2, (oy0 + 560) / 2),
-        ("KONTOR", (vx + hx) / 2, (560 + oy1) / 2),
-        ("TEKNIK", (hx + ox1) / 2, (560 + oy1) / 2),
-    ]
-    for txt, cx, cy in labels:
+    for (txt, cx, cy) in cfg.get("labels", []):
         tb = d.textbbox((0, 0), txt, font=fr)
         d.text((cx - (tb[2] - tb[0]) / 2, cy - (tb[3] - tb[1]) / 2), txt, font=fr, fill=(120, 124, 130))
 
-    # entré-text
-    d.text((360, oy1 - 46), "ENTRÉ", font=fsub, fill=(120, 124, 130))
+    for (txt, x, y) in cfg.get("texts", []):
+        d.text((x, y), txt, font=fsub, fill=(120, 124, 130))
 
     # norrpil
-    nx, ny = ox1 - 70, oy0 + 80
+    nx, ny = OX1 - 70, OY0 + 80
     d.polygon([(nx, ny - 46), (nx - 18, ny + 18), (nx, ny + 4), (nx + 18, ny + 18)], fill=INK)
     d.text((nx - 8, ny + 22), "N", font=font(26, bold=True), fill=INK)
 
     # skalstock
-    sx, sy = ox0 + 30, oy1 - 36
+    sx, sy = OX0 + 30, OY1 - 36
     d.rectangle([sx, sy, sx + 200, sy + 12], outline=INK, width=2)
     d.rectangle([sx, sy, sx + 100, sy + 12], fill=INK)
     d.text((sx, sy - 30), "0          5 m", font=fsub, fill=INK)
 
     # titelruta uppe till vänster
-    d.rectangle([ox0, oy0 - 0, ox0 + 360, oy0 + 64], fill=(255, 255, 255), outline=WALL, width=2)
-    d.text((ox0 + 14, oy0 + 10), "PLANRITNING – PLAN 1", font=font(24, bold=True), fill=INK)
-    d.text((ox0 + 14, oy0 + 38), "Demo · Utförandekontroll", font=fsub, fill=(110, 114, 120))
+    d.rectangle([OX0, OY0, OX0 + 380, OY0 + 64], fill=(255, 255, 255), outline=WALL, width=2)
+    d.text((OX0 + 14, OY0 + 10), cfg["title"], font=font(24, bold=True), fill=INK)
+    d.text((OX0 + 14, OY0 + 38), cfg.get("subtitle", "Demo · Utförandekontroll"), font=fsub, fill=(110, 114, 120))
 
-    img.save(os.path.join(ASSETS, "drawing-sample.png"), "PNG")
-    print("drawing-sample.png", img.size)
+    img.save(os.path.join(ASSETS, cfg["file"]), "PNG")
+    print(cfg["file"], img.size)
+
+
+PLANS = [
+    {
+        "file": "drawing-plan-a.png", "title": "PLAN 1 – ENTRÉPLAN",
+        "walls": [(600, OY0, 600, OY1), (600, 560, OX1, 560), (1060, 560, 1060, OY1)],
+        "doors": [(600, 470, 600, 560), (800, 560, 900, 560), (1060, 740, 1060, 830), (330, OY1, 470, OY1)],
+        "labels": [("LAGER", 345, 560), ("KONFERENS", 1055, 325), ("KONTOR", 830, 795), ("TEKNIK", 1285, 795)],
+        "texts": [("ENTRÉ", 360, OY1 - 46)],
+    },
+    {
+        "file": "drawing-plan-b.png", "title": "PLAN 2 – KONTOR",
+        "walls": [(620, OY0, 620, OY1), (1080, OY0, 1080, OY1), (OX0, 560, 620, 560), (1080, 520, OX1, 520)],
+        "doors": [(620, 300, 620, 390), (1080, 700, 1080, 790), (300, 560, 400, 560), (820, OY1, 960, OY1)],
+        "labels": [("KONTOR A", 355, 325), ("PENTRY", 355, 795), ("OPEN OFFICE", 850, 560),
+                   ("KONFERENS", 1295, 305), ("ARKIV", 1295, 775)],
+        "texts": [("ENTRÉ", 850, OY1 - 46)],
+    },
+    {
+        "file": "drawing-plan-c.png", "title": "KÄLLARPLAN",
+        "walls": [(800, OY0, 800, OY1), (OX0, 560, 800, 560), (800, 620, OX1, 620)],
+        "doors": [(800, 300, 800, 390), (400, 560, 500, 560), (1100, 620, 1200, 620), (720, OY1, 860, OY1)],
+        "labels": [("FÖRRÅD", 445, 325), ("UNDERCENTRAL", 445, 795), ("TEKNIK", 1155, 355), ("ARKIV", 1155, 825)],
+        "texts": [("TRAPPA", 745, OY1 - 46)],
+    },
+    {
+        "file": "drawing-plan-d.png", "title": "LAGER / LASTKAJ",
+        "walls": [(1150, OY0, 1150, OY1), (1150, 500, OX1, 500), (450, 760, 450, OY1), (OX0, 760, 450, 760)],
+        "doors": [(1150, 700, 1150, 790), (450, 860, 450, 950), (560, OY1, 760, OY1)],
+        "labels": [("LAGERHALL", 620, 430), ("KONTOR", 270, 895), ("LASTKAJ", 1330, 295), ("TRUCKZON", 1330, 765)],
+        "texts": [("PORT", 600, OY1 - 46)],
+    },
+]
+
+
+def make_drawings():
+    for cfg in PLANS:
+        draw_plan(cfg)
+    # Bakåtkompatibilitet: behåll drawing-sample.png (= plan A).
+    draw_plan({**PLANS[0], "file": "drawing-sample.png"})
 
 
 # ---------------------------------------------------------------- exempelfoton
@@ -199,7 +226,7 @@ def make_icons():
 
 
 if __name__ == "__main__":
-    make_drawing()
+    make_drawings()
     make_photo_extinguisher()
     make_photo_door()
     make_icons()

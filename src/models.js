@@ -15,6 +15,22 @@ export const SYMBOLS = [
 ];
 export const DEFAULT_SYMBOL = 'W021';
 
+// -------------------------------------------------------------------
+// SNABBSYMBOLER = interna arbetsmarkörer.
+// Placeras på ritningen för internt arbete (släckutrustning, utrymning m.m.)
+// och lagras i en EGEN store (`markers`), åtskild från avvikelser. De kommer
+// ALDRIG med i protokollet/PDF:en – uteslutningen sker i datamodellen, inte med
+// villkor i rapportkoden.
+//
+// Ordningen här är fallback (mest använda först) tills projektets faktiska bruk
+// räknas i SymbolPicker. Utöka listan fritt – UI:t läser den dynamiskt och
+// SYMBOL_COMP i iso7010.js måste ha en komponent för varje key.
+// -------------------------------------------------------------------
+export const QUICK_SYMBOLS = [
+  { key: 'F001', label: 'Brandsläckare', kategori: 'Släckutrustning' },
+  { key: 'E001', label: 'Nödutgång', kategori: 'Utrymning' },
+];
+
 // Avvikelser visas som en flagga (löpnummer) med en flyttbar ledarlinje ner till
 // punkten. Standardläge för flaggan: upp och något åt höger om punkten. Offset i
 // relativa ritningskoordinater (samma 0–1-system som KoordinatX/Y), sparas per post

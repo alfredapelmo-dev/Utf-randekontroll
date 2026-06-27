@@ -31,6 +31,16 @@ export class Repository {
   async getDrawing(ritningId) { throw new Error('not implemented'); }
   async saveDrawing(drawing) { throw new Error('not implemented'); }
   async listDrawings() { throw new Error('not implemented'); }
+  async listDrawingsForProject(projektGuid) { throw new Error('not implemented'); }
+  /* Dokument (brandskyddsbeskrivning m.m.) */
+  async addDocument(projektGuid, dokumenttyp, blob, filnamn) { throw new Error('not implemented'); }
+  async listDocuments(projektGuid) { throw new Error('not implemented'); }
+  async getDocument(id) { throw new Error('not implemented'); }
+  async deleteDocument(id) { throw new Error('not implemented'); }
+  /* Interna arbetsmarkörer (snabbsymboler – ej i protokoll) */
+  async listMarkers(projektGuid) { throw new Error('not implemented'); }
+  async saveMarker(marker) { throw new Error('not implemented'); }
+  async deleteMarker(id) { throw new Error('not implemented'); }
   /* Synk (demonstrerar offline-first; ingen nätverkstrafik i demon) */
   async listSyncQueue() { throw new Error('not implemented'); }
   /* Arkivering */
@@ -182,6 +192,68 @@ export class LocalRepository extends Repository {
     return (await getDB()).getAll('drawings');
   }
 
+  async listDrawingsForProject(projektGuid) {
+    const db = await getDB();
+    const list = await db.getAllFromIndex('drawings', 'by-projekt', projektGuid);
+    return list.sort((a, b) => String(a.namn || '').localeCompare(String(b.namn || ''), 'sv'));
+  }
+
+  // ---------------------------------------------------------- Dokument (Blob)
+  async addDocument(projektGuid, dokumenttyp, blob, filnamn) {
+    const db = await getDB();
+    const rec = {
+      id: newGuid(), ProjektGuid: projektGuid, dokumenttyp,
+      filnamn, mime: blob.type || 'application/octet-stream',
+      storlek: blob.size, blob, uploaded: nowIso(),
+    };
+    await db.put('documents', rec);
+    return rec;
+  }
+
+  async listDocuments(projektGuid) {
+    const db = await getDB();
+    const list = await db.getAllFromIndex('documents', 'by-projekt', projektGuid);
+    return list.sort((a, b) => new Date(b.uploaded || 0) - new Date(a.uploaded || 0));
+  }
+
+  async getDocument(id) {
+    return (await getDB()).get('documents', id);
+  }
+
+  async deleteDocument(id) {
+    return (await getDB()).delete('documents', id);
+  }
+
+  // ------------------------------------------------ Interna arbetsmarkörer
+  // Egen entitet (ej avvikelse). Synkas i beta men kommer aldrig med i PDF.
+  async listMarkers(projektGuid) {
+    const db = await getDB();
+    const list = await db.getAllFromIndex('markers', 'by-projekt', projektGuid);
+    return list.sort((a, b) => new Date(a.Created || 0) - new Date(b.Created || 0));
+  }
+
+  async saveMarker(marker) {
+    const db = await getDB();
+    const now = nowIso();
+    const prev = marker.id ? await db.get('markers', marker.id) : null;
+    const rec = { ...(prev || {}), ...marker };
+    if (!rec.id) rec.id = newGuid();
+    if (!rec.Created) rec.Created = now;
+    rec.Modified = now;
+    if (rec._spId === undefined) rec._spId = null;
+    if (rec._etag === undefined) rec._etag = null;
+    rec._dirty = true;
+    await db.put('markers', rec);
+    await this._enqueue('marker', rec.id, rec._spId ? 'update' : 'create');
+    return rec;
+  }
+
+  async deleteMarker(id) {
+    const db = await getDB();
+    await db.delete('markers', id);
+    await this._enqueue('marker', id, 'delete');
+  }
+
   // ---------------------------------------------------------- Arkivering
   async archiveProject(projektGuid) {
     const db = await getDB();
@@ -192,8 +264,9 @@ export class LocalRepository extends Repository {
     const foton = (await Promise.all(
       avvikelser.map((a) => db.getAllFromIndex('photos', 'by-avvikelse', a.AvvikelseGuid))
     )).flat();
-    const ritningIds = [...new Set(avvikelser.map((a) => a.RitningId).filter(Boolean))];
-    const ritningar = (await Promise.all(ritningIds.map((id) => db.get('drawings', id)))).filter(Boolean);
+    const ritningar = await db.getAllFromIndex('drawings', 'by-projekt', projektGuid);
+    const dokument = await db.getAllFromIndex('documents', 'by-projekt', projektGuid);
+    const markorer = await db.getAllFromIndex('markers', 'by-projekt', projektGuid);
 
     const archivedAt = nowIso();
     const archive = {
@@ -204,12 +277,17 @@ export class LocalRepository extends Repository {
       avvikelser,
       foton,
       ritningar,
+      dokument,
+      markorer,
     };
 
-    const tx = db.transaction(['archives', 'deviations', 'photos', 'projects'], 'readwrite');
+    const tx = db.transaction(['archives', 'deviations', 'photos', 'projects', 'drawings', 'documents', 'markers'], 'readwrite');
     await tx.objectStore('archives').put(archive);
     for (const a of avvikelser) await tx.objectStore('deviations').delete(a.AvvikelseGuid);
     for (const f of foton) await tx.objectStore('photos').delete(f.id);
+    for (const r of ritningar) await tx.objectStore('drawings').delete(r.RitningId);
+    for (const d of dokument) await tx.objectStore('documents').delete(d.id);
+    for (const m of markorer) await tx.objectStore('markers').delete(m.id);
     const updatedProjekt = { ...projekt, Status: 'Arkiverad', Modified: archivedAt, _dirty: true };
     await tx.objectStore('projects').put(updatedProjekt);
     await tx.done;
@@ -237,12 +315,14 @@ export class LocalRepository extends Repository {
     if (!archive) throw new Error('Arkivet hittades inte');
 
     const now = nowIso();
-    const tx = db.transaction(['archives', 'deviations', 'photos', 'projects', 'drawings'], 'readwrite');
+    const tx = db.transaction(['archives', 'deviations', 'photos', 'projects', 'drawings', 'documents', 'markers'], 'readwrite');
     const restoredProjekt = { ...archive.projekt, Status: 'Pågående', Modified: now, _dirty: true };
     await tx.objectStore('projects').put(restoredProjekt);
     for (const a of archive.avvikelser) await tx.objectStore('deviations').put(a);
     for (const f of archive.foton) await tx.objectStore('photos').put(f);
     for (const r of archive.ritningar) await tx.objectStore('drawings').put(r);
+    for (const d of (archive.dokument || [])) await tx.objectStore('documents').put(d);
+    for (const m of (archive.markorer || [])) await tx.objectStore('markers').put(m);
     await tx.objectStore('archives').delete(projektGuid);
     await tx.done;
 

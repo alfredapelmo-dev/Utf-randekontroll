@@ -1,9 +1,13 @@
 import { html, useState, useEffect, useRef } from '../ui.js';
 import { repository } from '../repository.js';
 import { seedIfEmpty } from '../seed.js';
+import { ensureDataVersion } from '../db.js';
+import { APP_VERSION, DATA_VERSION } from '../version.js';
 import { ROLES } from '../models.js';
 import { ProjectList } from './ProjectList.js';
 import { ProjectBrowser } from './ProjectBrowser.js';
+import { ProjectView } from './ProjectView.js';
+import { ProjectInfoForm } from './ProjectInfoForm.js';
 import { DrawingView } from './DrawingView.js';
 import { DeviationForm } from './DeviationForm.js';
 import { Protocol } from './Protocol.js';
@@ -24,11 +28,13 @@ export function App() {
   const role = ROLES[0];
   const [projects, setProjects] = useState([]);
   const [archives, setArchives] = useState([]);
-  const [view, setView] = useState('list');   // 'list' | 'projects' | 'project'
+  const [view, setView] = useState('list');   // 'list' | 'projects' | 'project' | 'drawing'
   const [activeProject, setActiveProject] = useState(null);
+  const [activeDrawingId, setActiveDrawingId] = useState(null);
   const [selectedDeviation, setSelectedDeviation] = useState(null);
   const [showProtocol, setShowProtocol] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState(null);
+  const [editInfo, setEditInfo] = useState(null);
   const [online, setOnline] = useState(navigator.onLine);
   const [syncCount, setSyncCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -51,6 +57,7 @@ export function App() {
   useEffect(() => {
     (async () => {
       try {
+        await ensureDataVersion(DATA_VERSION); // töm + seeda om vid ny datamodell
         await seedIfEmpty();
         await reloadAll();
       } catch (e) {
@@ -79,8 +86,11 @@ export function App() {
   }
 
   function openProject(p) { setActiveProject(p); setView('project'); }
+  function openDrawing(ritningId) { setActiveDrawingId(ritningId); setView('drawing'); }
+
   function back() {
-    if (view === 'project') { setView('list'); setActiveProject(null); bump(); }
+    if (view === 'drawing') { setView('project'); setActiveDrawingId(null); bump(); }
+    else if (view === 'project') { setView('list'); setActiveProject(null); bump(); }
     else if (view === 'projects') { setView('list'); }
   }
   function bump() { setRefreshKey((k) => k + 1); reloadAll(); }
@@ -89,18 +99,27 @@ export function App() {
   function closeProtocol() { setShowProtocol(false); }
   function handleAddNew() { toast('Skapa projekt kommer i beta-versionen.'); }
 
+  function closeEditInfo(saved) {
+    setEditInfo(null);
+    if (saved) {
+      setActiveProject((p) => (p && p.ProjektGuid === saved.ProjektGuid ? saved : p));
+      bump();
+    }
+  }
+
   async function handleArchiveConfirm() {
     if (!archiveTarget) return;
     try {
       await repository.archiveProject(archiveTarget.ProjektGuid);
-      // Ta bort eventuell favorit för arkiverat projekt
       setFavorites((prev) => {
         const next = new Set(prev);
         next.delete(archiveTarget.ProjektGuid);
         saveFavorites(next);
         return next;
       });
+      const wasActive = activeProject && activeProject.ProjektGuid === archiveTarget.ProjektGuid;
       setArchiveTarget(null);
+      if (wasActive) { setView('list'); setActiveProject(null); }
       await reloadAll();
       toast(`"${archiveTarget.Title}" arkiverades`);
     } catch (e) {
@@ -134,7 +153,11 @@ export function App() {
     }
   }
 
-  const showBack = view === 'project' || view === 'projects';
+  const showBack = view !== 'list';
+  const subtitle =
+    view === 'projects' ? 'Projekt' :
+    view === 'project' ? 'Projektöversikt' :
+    view === 'drawing' ? 'Ritning' : 'Demo · offline';
 
   if (!ready) {
     return html`
@@ -153,8 +176,9 @@ export function App() {
             : null}
           <div class="appbar-title">
             <strong>Utförandekontroll</strong>
-            <span>${view === 'projects' ? 'Projekt' : 'Demo · offline'}</span>
+            <span>${subtitle}</span>
           </div>
+          <span class="app-version" title="Appversion">v${APP_VERSION}</span>
         </div>
         <div class="badges">
           <span class=${'badge dot ' + (online ? 'online' : 'offline')}>${online ? 'Online' : 'Offline'}</span>
@@ -188,10 +212,22 @@ export function App() {
           onRestore=${handleRestore}
           onDownloadArchive=${handleDownloadArchive} />`}
 
-      ${view === 'project' && html`
+      ${view === 'project' && activeProject && html`
+        <${ProjectView}
+          repository=${repository}
+          project=${activeProject}
+          role=${role}
+          refreshKey=${refreshKey}
+          onOpenDrawing=${openDrawing}
+          onEditInfo=${setEditInfo}
+          onArchive=${setArchiveTarget}
+          toast=${toast} />`}
+
+      ${view === 'drawing' && activeProject && html`
         <${DrawingView}
           repository=${repository}
           project=${activeProject}
+          ritningId=${activeDrawingId}
           role=${role}
           refreshKey=${refreshKey}
           onSelectDeviation=${setSelectedDeviation}
@@ -213,6 +249,13 @@ export function App() {
           project=${activeProject}
           role=${role}
           onClose=${closeProtocol}
+          toast=${toast} />`}
+
+      ${editInfo && html`
+        <${ProjectInfoForm}
+          repository=${repository}
+          project=${editInfo}
+          onClose=${closeEditInfo}
           toast=${toast} />`}
 
       ${archiveTarget && html`

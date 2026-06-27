@@ -1,6 +1,10 @@
 import { html, useState, useEffect, useRef } from '../ui.js';
-import { STATUS_COLOR, can, personName, SYMBOLS, DEFAULT_SYMBOL, FLAG_OFFSET_DEFAULT } from '../models.js';
-import { ISO_LEGEND, SYMBOL_COMP } from '../iso7010.js';
+import { STATUS_COLOR, can, QUICK_SYMBOLS, DEFAULT_SYMBOL, FLAG_OFFSET_DEFAULT } from '../models.js';
+import { SYMBOL_COMP } from '../iso7010.js';
+import { SymbolPicker } from './SymbolPicker.js';
+
+const QUICK_LABEL = Object.fromEntries(QUICK_SYMBOLS.map((s) => [s.key, s.label]));
+const MAX_RECENT = 4; // hur många senast använda snabbsymboler som visas i raden
 
 const MIN_SCALE = 0.4;
 const MAX_SCALE = 8;
@@ -17,7 +21,7 @@ const FLAG_HALF_H = 13; // halva flagghöjden (px) – varifrån ledarlinjen sta
 // Befintlig flagga markeras genom att man trycker på den. Åtgärdsraden ger
 // snabbval (Markera åtgärdad / Klar / Avbryt). Koordinater sparas relativt (0–1);
 // flaggans offset i FlaggaOffsetX/Y.
-export function DrawingView({ repository, project, role, refreshKey, onSelectDeviation, onRequestProtocol, toast }) {
+export function DrawingView({ repository, project, ritningId, role, refreshKey, onSelectDeviation, onRequestProtocol, toast }) {
   const stageRef = useRef(null);
   const pointersRef = useRef(new Map());
   const gestureRef = useRef({ downTime: 0, downPt: null, moved: false, panId: null, pinchDist: 0, mid: null });
@@ -31,6 +35,9 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
   const [imgNat, setImgNat] = useState(null);       // { w, h }
   const [base, setBase] = useState(null);           // { w, h } visningsstorlek vid scale=1
   const [deviations, setDeviations] = useState([]);
+  const [markers, setMarkers] = useState([]);          // interna arbetsmarkörer
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   // Verktyg + redigering. `activeTool` = valt verktyg (null = panorera/inget).
   // `edit` ≠ null låser ritningen:
@@ -59,31 +66,44 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
   const canCreate = can(role, 'createDeviation');
   const locked = !!edit;
 
-  // ---- Ladda ritning (en delad demo-ritning) som objectURL
+  // ---- Ladda vald ritning som objectURL
   useEffect(() => {
     let url = null;
     (async () => {
-      const d = await repository.getDrawing('plan1.png');
+      const d = ritningId ? await repository.getDrawing(ritningId) : null;
       if (d && d.blob) {
         url = URL.createObjectURL(d.blob);
         setDrawing(d);
         setDrawingUrl(url);
       } else {
         setDrawing(null);
+        setDrawingUrl(null);
       }
     })();
     return () => { if (url) URL.revokeObjectURL(url); };
-  }, [repository, project.ProjektGuid]);
+  }, [repository, ritningId]);
 
-  // ---- Ladda avvikelser (per projekt, via indexerat fält)
+  // ---- Ladda avvikelser för den valda ritningen (filtrera projektets avvikelser)
   useEffect(() => {
     let alive = true;
     (async () => {
       const list = await repository.listDeviations(project.ProjektGuid);
-      if (alive) setDeviations(list);
+      const forDrawing = ritningId ? list.filter((d) => d.RitningId === ritningId) : list;
+      if (alive) setDeviations(forDrawing);
     })();
     return () => { alive = false; };
-  }, [repository, project.ProjektGuid, refreshKey]);
+  }, [repository, project.ProjektGuid, ritningId, refreshKey]);
+
+  // ---- Ladda interna arbetsmarkörer för den valda ritningen
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const list = await repository.listMarkers(project.ProjektGuid);
+      const forDrawing = ritningId ? list.filter((m) => m.RitningId === ritningId) : list;
+      if (alive) setMarkers(forDrawing);
+    })();
+    return () => { alive = false; };
+  }, [repository, project.ProjektGuid, ritningId, refreshKey]);
 
   // ---- Passa in ritningen (contain) och centrera
   function fit() {
@@ -190,11 +210,17 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
       const dt = Date.now() - g.downTime;
       if (!g.moved && dt < 350 && g.downPt && base) {
         const rel = screenToRel(g.downPt.x, g.downPt.y);
-        // Tap placerar ut det valda verktyget (om något är valt) → låst läge.
         if (rel) {
-          if (!canCreate) { if (toast) toast('Rollen kan inte skapa avvikelser'); }
-          else if (activeTool) setEdit({ kind: 'new', symbol: activeTool, relX: rel.relX, relY: rel.relY, flagX: FLAG_OFFSET_DEFAULT.x, flagY: FLAG_OFFSET_DEFAULT.y, label: 'ID' });
-          else if (toast) toast('Välj ett verktyg eller en flagga');
+          if (activeTool === 'W021') {
+            // Avvikelse → låst läge (justera punkt/flagga, bekräfta öppnar formulär).
+            if (!canCreate) { if (toast) toast('Rollen kan inte skapa avvikelser'); }
+            else setEdit({ kind: 'new', symbol: 'W021', relX: rel.relX, relY: rel.relY, flagX: FLAG_OFFSET_DEFAULT.x, flagY: FLAG_OFFSET_DEFAULT.y, label: 'ID' });
+          } else if (activeTool) {
+            // Snabbsymbol = intern arbetsmarkör → placeras direkt, inget formulär.
+            placeMarker(activeTool, rel.relX, rel.relY);
+          } else if (toast) {
+            toast('Välj Avvikelse eller en snabbsymbol');
+          }
         }
       }
       g.panId = null; g.pinchDist = 0; g.mid = null; g.downPt = null;
@@ -327,7 +353,7 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
     onSelectDeviation({
       __isNew: true,
       ProjektGuid: project.ProjektGuid,
-      RitningId: drawing ? drawing.RitningId : 'plan1.png',
+      RitningId: drawing ? drawing.RitningId : ritningId,
       KoordinatX: round3(relX), KoordinatY: round3(relY),
       Symbol: symbol,
       FlaggaOffsetX: round3(flag.x), FlaggaOffsetY: round3(flag.y),
@@ -336,6 +362,39 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
       Ansvarig: project.Besiktningsman || null,
       FotoReferenser: [],
     });
+  }
+
+  // ---- Interna arbetsmarkörer (snabbsymboler)
+  async function placeMarker(symbol, relX, relY) {
+    try {
+      const saved = await repository.saveMarker({
+        ProjektGuid: project.ProjektGuid,
+        RitningId: drawing ? drawing.RitningId : ritningId,
+        Symbol: symbol,
+        KoordinatX: round3(relX), KoordinatY: round3(relY),
+      });
+      setMarkers((list) => [...list, saved]);
+    } catch (err) {
+      console.warn(err); if (toast) toast('Kunde inte placera markör');
+    }
+  }
+
+  async function removeMarker(id) {
+    try {
+      await repository.deleteMarker(id);
+      setMarkers((list) => list.filter((m) => m.id !== id));
+      setSelectedMarker(null);
+      if (toast) toast('Markör borttagen');
+    } catch (err) {
+      console.warn(err); if (toast) toast('Kunde inte ta bort markör');
+    }
+  }
+
+  // Väljer en snabbsymbol (från picker eller snabbknapp) som aktivt verktyg.
+  function chooseQuickSymbol(key) {
+    setActiveTool(key);
+    setShowPicker(false);
+    setSelectedMarker(null);
   }
 
   function zoomBy(factor) {
@@ -353,7 +412,24 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
     s, n: deviations.filter((d) => d.Status === s).length,
   }));
 
-  const activeLabel = activeTool ? (SYMBOLS.find((t) => t.key === activeTool) || {}).label : null;
+  // Användning per snabbsymbol i aktuellt projekt → frekvens i picker + ordning
+  // för "senast använda"-raden bredvid Avvikelse-knappen.
+  const usage = markers.reduce((m, mk) => { m[mk.Symbol] = (m[mk.Symbol] || 0) + 1; return m; }, {});
+  const recentSymbols = (() => {
+    const seen = new Set();
+    const out = [];
+    // Senast använda först (markers laddas i Created-ordning → gå baklänges).
+    for (let i = markers.length - 1; i >= 0; i--) {
+      const k = markers[i].Symbol;
+      if (!seen.has(k)) { seen.add(k); out.push(k); }
+      if (out.length >= MAX_RECENT) break;
+    }
+    return out;
+  })();
+
+  const activeLabel = activeTool
+    ? (activeTool === 'W021' ? 'Avvikelse' : (QUICK_LABEL[activeTool] || 'symbol'))
+    : null;
   const hint = locked
     ? (edit.kind === 'existing'
         ? '1 finger: flytta punkt · 2 fingrar: flytta ID-ruta · ⚙ öppnar avvikelsen'
@@ -361,7 +437,7 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
     : activeTool
       ? `Tryck på ritningen för att placera ${activeLabel}.`
       : canCreate
-        ? 'Välj ett verktyg, eller tryck på en flagga för att flytta/öppna den.'
+        ? 'Välj Avvikelse eller en snabbsymbol nedan, eller tryck på en flagga.'
         : 'Tryck på en markör för att öppna avvikelsen.';
 
   // Skärmposition för en relativ koordinat.
@@ -400,21 +476,6 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
           <button class="btn primary sm" onClick=${onRequestProtocol}>📄 Protokoll</button>`}
       </div>
 
-      ${canCreate && html`
-        <div class="tool-palette" role="toolbar" aria-label="Verktyg">
-          <span class="tp-label">Verktyg</span>
-          ${SYMBOLS.map(({ key, label }) => {
-            const Comp = SYMBOL_COMP[key];
-            const active = activeTool === key;
-            return html`
-              <button key=${key} class=${'tp-tool' + (active ? ' active' : '')}
-                      aria-pressed=${active} disabled=${locked}
-                      onClick=${() => setActiveTool(active ? null : key)}>
-                <${Comp} size=${22} /><span>${label}</span>
-              </button>`;
-          })}
-        </div>`}
-
       <div class=${'stage' + (locked ? ' locked' : '')} ref=${stageRef}
            onPointerDown=${onPointerDown}
            onPointerMove=${onPointerMove}
@@ -446,19 +507,18 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
                   ${it.label}
                 </button>`)}
 
-              ${base && deviations.map((d) => {
-                const symbol = d.Symbol || 'W021';
-                if (symbol === 'W021') return null;
-                const p = toScreen(d.KoordinatX, d.KoordinatY);
-                const color = STATUS_COLOR[d.Status] || '#999';
-                const Comp = SYMBOL_COMP[symbol] || SYMBOL_COMP.W021;
+              ${/* Interna arbetsmarkörer (snabbsymboler) – ej i protokoll */ ''}
+              ${base && markers.map((m) => {
+                const p = toScreen(m.KoordinatX, m.KoordinatY);
+                const Comp = SYMBOL_COMP[m.Symbol] || SYMBOL_COMP.W021;
+                const sel = selectedMarker === m.id;
                 return html`
-                  <button class="marker symbol" key=${d.AvvikelseGuid}
+                  <button class=${'marker symbol' + (sel ? ' sel' : '')} key=${m.id}
                           style=${{ left: p.x + 'px', top: p.y + 'px' }}
-                          title=${d.Title} disabled=${locked}
+                          title=${QUICK_LABEL[m.Symbol] || m.Symbol} disabled=${locked}
                           onPointerDown=${(e) => e.stopPropagation()}
-                          onClick=${(e) => { e.stopPropagation(); onSelectDeviation(d); }}>
-                    <span class="sym-wrap" style=${{ borderColor: color }}><${Comp} size=${24} /></span>
+                          onClick=${(e) => { e.stopPropagation(); setSelectedMarker(sel ? null : m.id); }}>
+                    <span class="sym-wrap" style=${{ borderColor: sel ? 'var(--brand)' : '#999' }}><${Comp} size=${24} /></span>
                   </button>`;
               })}
 
@@ -485,6 +545,47 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
           : html`<div class="empty" style=${{ position: 'absolute', inset: 0 }}><p>Ritning saknas.</p></div>`}
       </div>
 
+      ${/* ---- Verktygsrad UNDER ritningen ---- */ ''}
+      ${canCreate && html`
+        <div class="tool-bar" role="toolbar" aria-label="Verktyg">
+          <button class=${'tool-btn primary-tool' + (activeTool === 'W021' ? ' active' : '')}
+                  aria-pressed=${activeTool === 'W021'} disabled=${locked}
+                  onClick=${() => setActiveTool(activeTool === 'W021' ? null : 'W021')}>
+            <${SYMBOL_COMP.W021} size=${24} /><span>Avvikelse</span>
+          </button>
+
+          <div class="tool-divider" aria-hidden="true"></div>
+
+          ${recentSymbols.map((key) => {
+            const Comp = SYMBOL_COMP[key];
+            const active = activeTool === key;
+            return html`
+              <button key=${key} class=${'tool-btn icon-tool' + (active ? ' active' : '')}
+                      aria-pressed=${active} disabled=${locked}
+                      title=${QUICK_LABEL[key] || key}
+                      onClick=${() => setActiveTool(active ? null : key)}>
+                ${Comp ? html`<${Comp} size=${24} />` : '⬚'}
+              </button>`;
+          })}
+
+          <button class="tool-btn quick-tool" disabled=${locked} onClick=${() => setShowPicker(true)}>
+            <span class="quick-plus">＋</span><span>Snabbsymbol</span>
+          </button>
+        </div>`}
+
+      ${/* ---- Borttagningsrad för vald intern markör ---- */ ''}
+      ${selectedMarker && !locked && (() => {
+        const m = markers.find((x) => x.id === selectedMarker);
+        if (!m) return null;
+        return html`
+          <div class="edit-bar">
+            <span class="eb-label">${QUICK_LABEL[m.Symbol] || m.Symbol} (intern markör)</span>
+            <div class="spacer"></div>
+            <button class="btn danger sm" onClick=${() => removeMarker(m.id)}>Ta bort</button>
+            <button class="btn ghost sm" onClick=${() => setSelectedMarker(null)}>Avbryt</button>
+          </div>`;
+      })()}
+
       ${locked && html`
         <div class="edit-bar">
           <span class="eb-label">${edit.kind === 'existing' ? `Avvikelse #${edit.label}` : 'Ny markering'}</span>
@@ -505,33 +606,11 @@ export function DrawingView({ repository, project, role, refreshKey, onSelectDev
         <span class=${'hint' + (locked ? ' locked' : '')}>${hint}</span>
       </div>
 
-      <div class="legend">
-        ${['Öppen', 'Åtgärdad', 'Verifierad'].map((s) => html`
-          <span class="item" key=${s}><span class="swatch" style=${{ background: STATUS_COLOR[s] }}></span>${s}</span>`)}
-        ${ISO_LEGEND.map(({ key, label, Comp }) => html`
-          <span class="item" key=${key}><${Comp} size=${18} />${label}</span>`)}
-      </div>
-
-      <div class="dev-list">
-        <div class="section-title" style=${{ margin: '8px 2px 0' }}>Avvikelser (${deviations.length})</div>
-        ${deviations.length === 0
-          ? html`<div class="empty"><p class="muted">Inga avvikelser ännu på den här ritningen.</p></div>`
-          : deviations.map((d, i) => {
-              const color = STATUS_COLOR[d.Status] || '#999';
-              return html`
-                <div class="dev-row" key=${d.AvvikelseGuid} onClick=${() => onSelectDeviation(d)}>
-                  <div class="num" style=${{ background: color }}>${i + 1}</div>
-                  <div class="main">
-                    <strong>${d.Title || '(namnlös)'}</strong>
-                    <div class="sub">
-                      <span class=${'sev ' + d.Allvarlighetsgrad}>${d.Allvarlighetsgrad}</span>
-                      <span class="muted nowrap">${personName(d.Ansvarig)}</span>
-                    </div>
-                  </div>
-                  <span class="pill nowrap"><span class="swatch" style=${{ background: color }}></span>${d.Status}</span>
-                </div>`;
-            })}
-      </div>
+      ${showPicker && html`
+        <${SymbolPicker}
+          usage=${usage}
+          onPick=${chooseQuickSymbol}
+          onClose=${() => setShowPicker(false)} />`}
     </div>`;
 }
 
