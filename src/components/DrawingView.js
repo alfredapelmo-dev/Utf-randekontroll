@@ -1,5 +1,5 @@
 import { html, useState, useEffect, useRef } from '../ui.js';
-import { STATUS_COLOR, can, QUICK_SYMBOLS, DEFAULT_SYMBOL, FLAG_OFFSET_DEFAULT } from '../models.js';
+import { STATUS_COLOR, can, QUICK_SYMBOLS, DEFAULT_SYMBOL, FLAG_OFFSET_DEFAULT, CHECK_SYMBOL } from '../models.js';
 import { SYMBOL_COMP } from '../iso7010.js';
 import { SymbolPicker } from './SymbolPicker.js';
 
@@ -9,6 +9,8 @@ const MAX_RECENT = 4; // hur många senast använda snabbsymboler som visas i ra
 const MIN_SCALE = 0.4;
 const MAX_SCALE = 8;
 const FLAG_HALF_H = 13; // halva flagghöjden (px) – varifrån ledarlinjen startar
+const LONGPRESS_MS = 3000;   // håll så länge → placera en bock (kontrollerad). Matchar ring-animationen i CSS.
+const LONGPRESS_SLOP = 12;   // tillåten fingerdrift (px) innan långtrycket avbryts
 
 // Ritningsvy (kärnfunktionen). Pan/zoom med touch + mus, ISO 7010-markörer som
 // SVG-lager. Avvikelser (W021) visas som en flagga med löpnummer + ledarlinje ner
@@ -38,6 +40,7 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
   const [markers, setMarkers] = useState([]);          // interna arbetsmarkörer
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [pressPt, setPressPt] = useState(null);   // håll-indikatorns läge (stage-lokalt) under långtryck
 
   // Verktyg + redigering. `activeTool` = valt verktyg (null = panorera/inget).
   // `edit` ≠ null låser ritningen:
@@ -147,6 +150,34 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     return () => stage.removeEventListener('wheel', onWheel);
   }, []);
 
+  // ---- Långtryck (håll ~3 s) → placera en bock (kontrollerad). Intern snabbsymbol
+  // som bekräftar att något är kontrollerat och OK (aldrig i protokollet).
+  function localPt(clientX, clientY) {
+    const r = stageRef.current.getBoundingClientRect();
+    return { x: clientX - r.left, y: clientY - r.top };
+  }
+  function startLongPress(clientX, clientY) {
+    cancelLongPress();
+    if (!canCreate || !base) return;          // bara roller som får skapa, och när ritning finns
+    const g = gestureRef.current;
+    g.longStart = { x: clientX, y: clientY };
+    setPressPt(localPt(clientX, clientY));     // visar håll-ringen som fylls på 3 s
+    g.longTimer = setTimeout(() => {
+      gestureRef.current.longTimer = null;
+      setPressPt(null);
+      const rel = screenToRel(clientX, clientY);
+      if (!rel) return;
+      placeMarker(CHECK_SYMBOL, rel.relX, rel.relY);
+      if (navigator.vibrate) { try { navigator.vibrate(30); } catch (_) {} }
+      if (toast) toast('Markerad som kontrollerad ✓');
+    }, LONGPRESS_MS);
+  }
+  function cancelLongPress() {
+    const g = gestureRef.current;
+    if (g.longTimer) { clearTimeout(g.longTimer); g.longTimer = null; }
+    setPressPt((p) => (p ? null : p));
+  }
+
   // ---- Pointer-gester på stage. Routar till låst-läge när edit ≠ null.
   function onPointerDown(e) {
     if (editRef.current) return onLockDown(e);
@@ -158,7 +189,9 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     if (pts.size === 1) {
       g.moved = false; g.downTime = Date.now();
       g.downPt = { x: e.clientX, y: e.clientY }; g.panId = e.pointerId;
+      startLongPress(e.clientX, e.clientY);
     } else if (pts.size === 2) {
+      cancelLongPress();                       // andra fingret = pinch, inte långtryck
       const [a, b] = [...pts.values()];
       g.pinchDist = dist(a, b);
       g.mid = midLocal(a, b, stage);
@@ -179,8 +212,14 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     if (pts.size === 1 && g.panId === e.pointerId) {
       const dx = cur.x - prev.x, dy = cur.y - prev.y;
       if (Math.abs(dx) + Math.abs(dy) > 3) g.moved = true;
+      // Avbryt långtrycket om fingret driver för långt (men tolerera liten skakning).
+      if (g.longTimer && g.longStart &&
+          Math.hypot(cur.x - g.longStart.x, cur.y - g.longStart.y) > LONGPRESS_SLOP) {
+        cancelLongPress();
+      }
       setView((v) => ({ ...v, tx: v.tx + dx, ty: v.ty + dy }));
     } else if (pts.size >= 2) {
+      cancelLongPress();
       g.moved = true;
       const [a, b] = [...pts.values()];
       const d = dist(a, b);
@@ -205,6 +244,7 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     const pts = pointersRef.current;
     const g = gestureRef.current;
     pts.delete(e.pointerId);
+    cancelLongPress();   // släpp före 3 s avbryter (firade långtryck har redan nollat timern)
 
     if (pts.size === 0) {
       const dt = Date.now() - g.downTime;
@@ -216,8 +256,9 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
             if (!canCreate) { if (toast) toast('Rollen kan inte skapa avvikelser'); }
             else setEdit({ kind: 'new', symbol: 'W021', relX: rel.relX, relY: rel.relY, flagX: FLAG_OFFSET_DEFAULT.x, flagY: FLAG_OFFSET_DEFAULT.y, label: 'ID' });
           } else if (activeTool) {
-            // Snabbsymbol = intern arbetsmarkör → placeras direkt, inget formulär.
-            placeMarker(activeTool, rel.relX, rel.relY);
+ 		 // Snabbsymbol = intern arbetsmarkör → placeras direkt, inget formulär.
+  		placeMarker(activeTool, rel.relX, rel.relY);
+  		setActiveTool(null); // <--- Detta stänger av snabbsymbols-funktionen automatiskt efter placering!
           } else if (toast) {
             toast('Välj Avvikelse eller en snabbsymbol');
           }
@@ -267,8 +308,9 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     if (m.size >= 2 && g.mode === 'flag') {
       const pts = [...m.values()];
       const cx = (pts[0].x + pts[1].x) / 2, cy = (pts[0].y + pts[1].y) / 2;
-      const dx = (cx - g.startCentroid.x) / v.scale / base.w;
-      const dy = (cy - g.startCentroid.y) / v.scale / base.h;
+      // Konstant pixel-offset (matchar flagScreen: ingen /scale här).
+      const dx = (cx - g.startCentroid.x) / base.w;
+      const dy = (cy - g.startCentroid.y) / base.h;
       setEdit((p) => (p ? { ...p, flagX: g.startFlag.x + dx, flagY: g.startFlag.y + dy } : p));
     } else if (m.size === 1 && g.mode === 'point') {
       const dxs = e.clientX - g.startPt.x, dys = e.clientY - g.startPt.y;
@@ -437,7 +479,7 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     : activeTool
       ? `Tryck på ritningen för att placera ${activeLabel}.`
       : canCreate
-        ? 'Välj Avvikelse eller en snabbsymbol nedan, eller tryck på en flagga.'
+        ? 'Välj Avvikelse eller en snabbsymbol nedan, tryck på en flagga – eller håll 3 s för en bock (kontrollerad).'
         : 'Tryck på en markör för att öppna avvikelsen.';
 
   // Skärmposition för en relativ koordinat.
@@ -445,6 +487,12 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     x: view.tx + rx * base.w * view.scale,
     y: view.ty + ry * base.h * view.scale,
   });
+
+  // Flaggans skärmposition relativt sin punkt. Offset lagras relativt (0–1) men
+  // ritas med KONSTANT pixellängd (offset · base) oberoende av zoom – annars växer
+  // ledarlinjen linjärt med view.scale och flaggan glider långt från punkten vid
+  // inzoomning. (Drag-matematiken i onLockMove speglar detta: ingen /scale.)
+  const flagScreen = (a, offX, offY) => ({ x: a.x + offX * base.w, y: a.y + offY * base.h });
 
   // Befintliga avvikelseflaggor (W021), utom den som redigeras (ritas som aktiv).
   const editingGuid = (edit && edit.kind === 'existing') ? edit.deviation.AvvikelseGuid : null;
@@ -454,14 +502,14 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
     const offX = typeof d.FlaggaOffsetX === 'number' ? d.FlaggaOffsetX : FLAG_OFFSET_DEFAULT.x;
     const offY = typeof d.FlaggaOffsetY === 'number' ? d.FlaggaOffsetY : FLAG_OFFSET_DEFAULT.y;
     const a = toScreen(d.KoordinatX, d.KoordinatY);
-    const f = toScreen(d.KoordinatX + offX, d.KoordinatY + offY);
+    const f = flagScreen(a, offX, offY);
     return { d, index: i, label: i + 1, ax: a.x, ay: a.y, fx: f.x, fy: f.y, color: STATUS_COLOR[d.Status] || '#999' };
   }).filter(Boolean) : [];
 
   // Aktiv flagga (ny utplacering eller markerad befintlig under flytt).
   const activeFlag = (edit && base && edit.symbol === 'W021') ? (() => {
     const a = toScreen(edit.relX, edit.relY);
-    const f = toScreen(edit.relX + edit.flagX, edit.relY + edit.flagY);
+    const f = flagScreen(a, edit.flagX, edit.flagY);
     const color = edit.kind === 'existing' ? (STATUS_COLOR[edit.deviation.Status] || '#999') : STATUS_COLOR['Öppen'];
     return { ax: a.x, ay: a.y, fx: f.x, fy: f.y, color, label: edit.label };
   })() : null;
@@ -543,6 +591,15 @@ export function DrawingView({ repository, project, ritningId, role, refreshKey, 
               })()}
             </div>`
           : html`<div class="empty" style=${{ position: 'absolute', inset: 0 }}><p>Ritning saknas.</p></div>`}
+
+        ${pressPt && html`
+          <div class="press-ring" style=${{ left: pressPt.x + 'px', top: pressPt.y + 'px' }} aria-hidden="true">
+            <svg viewBox="0 0 48 48">
+              <circle class="pr-bg" cx="24" cy="24" r="20" />
+              <circle class="pr-fg" cx="24" cy="24" r="20" />
+            </svg>
+            <span class="pr-check">✓</span>
+          </div>`}
       </div>
 
       ${/* ---- Verktygsrad UNDER ritningen ---- */ ''}

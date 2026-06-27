@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="11.7129" height="9.2114" viewBox="0 0 11.7129 9.2114">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-493.2062,715.84457)" d="M495.2062 708.6331H502.9191V713.8445H495.2062Z"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-493.2062,715.84457)" d="M495.2062 713.8445V708.6331H502.9191V713.8445Z" clip-rule="evenodd"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,3.4737855,3.8255616)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0V1.26H-.84V-.18C-.758-1.404-1.253-2.573 .3-3.06L.84-3.12 1.38-3.06C2.912-2.723 2.522-1.379 2.58-.18V1.26H1.74V-1.62L1.68-1.86 1.56-2.1 1.32-2.28 .84-2.4C.151-2.225-.023-2.017 0-1.32V0Z"/>
+<path transform="matrix(1,0,0,-1,6.713785,3.3455616)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0V.78H2.58"/>
+<path transform="matrix(1,0,0,-1,6.713785,3.3455616)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0H.84"/>
+<path transform="matrix(1,0,0,-1,8.453785,3.3455616)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0H.84V.78"/>
+<path transform="matrix(1,0,0,-1,8.453785,3.3455616)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0V-3.6"/>
+<path transform="matrix(1,0,0,-1,7.553785,3.3455616)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0V-3.6H.9"/>
+<path transform="matrix(1,0,0,-1,5.213806,2.5655518)" d="M0 0 .84-.6H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,2.5655518)" d="M0 0H.84V-.6" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,2.5655518)" d="M0 0 .84-.66H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,2.5655518)" d="M0 0H.84V-.66" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,3.1655274)" d="M0 0 .84-.12H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,3.1655274)" d="M0 0H.84V-.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,3.225525)" d="M0 0 .84-.06H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,3.225525)" d="M0 0H.84V-.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.713806,2.5655518)" d="M0 0 2.58-.78H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.713806,2.5655518)" d="M0 0H2.58V-.78" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,3.2855225)" d="M0 0 .84-.54H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,3.2855225)" d="M0 0H.84V-.54" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,3.2855225)" d="M0 0 .84-.54H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,3.2855225)" d="M0 0H.84V-.54" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,3.8255616)" d="M0 0 .84-.18H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,3.8255616)" d="M0 0H.84V-.18" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,3.8255616)" d="M0 0 .84-.18H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,3.8255616)" d="M0 0H.84V-.18" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,4.005554)" d="M0 0 .84-.48H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,4.005554)" d="M0 0H.84V-.48" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,4.005554)" d="M0 0 .84-.48H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,4.005554)" d="M0 0H.84V-.48" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,4.4855349)" d="M0 0 .84-.24H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,4.4855349)" d="M0 0H.84V-.24" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,4.4855349)" d="M0 0 .84-.24H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,4.4855349)" d="M0 0H.84V-.24" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,4.725525)" d="M0 0 .84-.42H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,4.725525)" d="M0 0H.84V-.42" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,4.725525)" d="M0 0 .84-.42H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,4.725525)" d="M0 0H.84V-.42" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,5.145569)" d="M0 0 .84-.3H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,5.145569)" d="M0 0H.84V-.3" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.145569)" d="M0 0 .84-.3H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.145569)" d="M0 0H.84V-.3" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,5.4455568)" d="M0 0H.84" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,5.4455568)" d="M0 0H.84" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.4455568)" d="M0 0H.84" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.4455568)" d="M0 0H.84" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,5.4455568)" d="M0 0 .78-.24H-.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.213806,5.4455568)" d="M0 0H.84L.78-.24" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.4455568)" d="M0 0 .9-.24H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.4455568)" d="M0 0H.84L.9-.24" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.153778,5.685547)" d="M0 0 .78-.24H-.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.153778,5.685547)" d="M0 0H.84L.78-.24" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.685547)" d="M0 0 1.02-.24H.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.633789,5.685547)" d="M0 0H.9L1.02-.24" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.033783,5.925537)" d="M0 0 .9-.06H-.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.033783,5.925537)" d="M0 0H.9V-.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.6937867,5.925537)" d="M0 0 1.02-.06H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.6937867,5.925537)" d="M0 0H.96L1.02-.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.9737856,5.9855349)" d="M0 0 .9-.12H-.18" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.9737856,5.9855349)" d="M0 0H.96L.9-.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.6937867,5.9855349)" d="M0 0 1.26-.12H.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.6937867,5.9855349)" d="M0 0H1.02L1.26-.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.7937929,6.10553)" d="M0 0 1.02-.12H-.48" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.7937929,6.10553)" d="M0 0H1.08L1.02-.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.8137818,6.10553)" d="M0 0 1.5-.12H.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.8137818,6.10553)" d="M0 0H1.14L1.5-.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.8737794,6.225525)" d="M0 0 2.88-.18H.12" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.8737794,6.225525)" d="M0 0H2.94L2.88-.18" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.993805,6.4055178)" d="M0 0 2.34-.3H.3" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.993805,6.4055178)" d="M0 0H2.76L2.34-.3" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.2937928,6.7055666)" d="M0 0 1.56-.18H.48" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.2937928,6.7055666)" d="M0 0H2.04L1.56-.18" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.5538027,3.34552)" d="M0 0 .9-3.6H0" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.5538027,3.34552)" d="M0 0H.9V-3.6" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.7738038,6.885559)" d="M0 0 .54-.06" fill="#0000ff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.7738038,6.885559)" d="M0 0H1.08L.54-.06" fill="#0000ff" fill-rule="evenodd"/>
+</g>
+</g>
+</svg>

@@ -2,7 +2,7 @@
    vid installation. Allt är lokalt; ingen nätverkstrafik krävs efter första
    laddning. (Registreras endast i säker kontext: https eller localhost.) */
 
-const CACHE = 'utfk-demo-v14';
+const CACHE = 'utfk-demo-v15';
 
 const PRECACHE = [
   './',

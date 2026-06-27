@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="20.5" height="15.25" viewBox="0 0 20.5 15.25">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-195.125,1026.5)" d="M197.125 1013.25H213.625V1024.5H197.125Z"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-195.125,1026.5)" d="M197.125 1024.5V1013.25H213.625V1024.5Z" clip-rule="evenodd"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,10.494995,3.5609742)" d="M0 0 7.14-2.94H2.94" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,10.494995,3.5609742)" d="M0 0H4.2L7.14-2.94" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.9349976,6.5009768)" d="M0 0V-1.440002H15.56503V-1.388733Z" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.9349976,6.5009768)" d="M14.7 0H0L15.56503-1.388733V-.8650513Z" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.9349976,7.940979)" d="M0 0 14.7-1.38H0" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,2.9349976,7.940979)" d="M0 0 14.7-1.380005 15.56503-.5510254V0Z" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,13.434998,9.320984)" d="M0 0 1.26-3H-2.94" fill="#007b4e" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,13.434998,9.320984)" d="M0 0H4.2L1.26-3" fill="#007b4e" fill-rule="evenodd"/>
+</g>
+</g>
+</svg>

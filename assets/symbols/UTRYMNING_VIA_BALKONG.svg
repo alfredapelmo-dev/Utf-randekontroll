@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="16.75" height="16" viewBox="0 0 16.75 16">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-201.125,743.75)" d="M203.125 729.75H215.875V741.75H203.125Z"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-201.125,743.75)" d="M203.125 741.75V729.75H215.875V741.75Z" clip-rule="evenodd"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,8.6349949,3.9509888)" d="M0 0H.3-.9" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.7350008,3.9509888)" d="M0 0 1.8-.12H-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.7350008,3.9509888)" d="M0 0H1.2L1.8-.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.375,4.070984)" d="M0 0 2.52-.12H-.54" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.375,4.070984)" d="M0 0H2.16L2.52-.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.8350069,4.190979)" d="M0 0 3.54-.18H-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.8350069,4.190979)" d="M0 0H3.06L3.54-.18" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.475006,4.3709719)" d="M0 0 4.26-.18H-.48" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.475006,4.3709719)" d="M0 0H3.9L4.26-.18" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.994995,4.5510256)" d="M0 0 5.16-.24H-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.994995,4.5510256)" d="M0 0H4.74L5.16-.24" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.6950075,4.7910158)" d="M0 0 5.82-.3H-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.6950075,4.7910158)" d="M0 0H5.46L5.82-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.274994,5.0910036)" d="M0 0 6.6-.3H-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.274994,5.0910036)" d="M0 0H6.24L6.6-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.975006,5.390991)" d="M0 0 7.14-.36H-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.975006,5.390991)" d="M0 0H6.9L7.14-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.675003,5.7509768)" d="M0 0 7.74-.36H-.24" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.675003,5.7509768)" d="M0 0H7.44L7.74-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.4349977,6.111023)" d="M0 0 8.22-.42H-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.4349977,6.111023)" d="M0 0H7.98L8.22-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.1349947,6.531006)" d="M0 0 8.7-.36H-.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.1349947,6.531006)" d="M0 0H8.52L8.7-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.0149996,6.890991)" d="M0 0 8.94-.48H-.18" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.0149996,6.890991)" d="M0 0H8.82L8.94-.48" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.8350068,7.3709719)" d="M0 0 9.24-.42H-.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.8350068,7.3709719)" d="M0 0H9.12L9.24-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.7149964,7.7910158)" d="M0 0 9.42-.42H-.06" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.7149964,7.7910158)" d="M0 0H9.36L9.42-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.6549988,8.210999)" d="M0 0 9.54-.48H0" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.6549988,8.210999)" d="M0 0H9.48L9.54-.48" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.6549988,8.690979)" d="M0 0 9.48-.48H0" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.6549988,8.690979)" d="M0 0H9.54L9.48-.48" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.6549988,9.1710209)" d="M0 0 9.42-.42H.06" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.6549988,9.1710209)" d="M0 0H9.48L9.42-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.7149964,9.591003)" d="M0 0 9.24-.42H.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.7149964,9.591003)" d="M0 0H9.36L9.24-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.8350068,10.010986)" d="M0 0 9-.48H.18" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,3.8350068,10.010986)" d="M0 0H9.12L9-.48" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.0149996,10.491028)" d="M0 0 8.64-.42H.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.0149996,10.491028)" d="M0 0H8.82L8.64-.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.1349947,10.911011)" d="M0 0 8.28-.36H.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.1349947,10.911011)" d="M0 0H8.52L8.28-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.4349977,11.270996)" d="M0 0 7.68-.36H.24" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.4349977,11.270996)" d="M0 0H7.98L7.68-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.675003,11.630981)" d="M0 0 7.2-.36H.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.675003,11.630981)" d="M0 0H7.44L7.2-.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.975006,11.991028)" d="M0 0 6.54-.3H.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,4.975006,11.991028)" d="M0 0H6.9L6.54-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.274994,12.291016)" d="M0 0 5.88-.3H.42" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.274994,12.291016)" d="M0 0H6.24L5.88-.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.6950075,12.591003)" d="M0 0 5.04-.24H.3" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.6950075,12.591003)" d="M0 0H5.46L5.04-.24" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.994995,12.830994)" d="M0 0 4.38-.18H.48" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,5.994995,12.830994)" d="M0 0H4.74L4.38-.18" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.475006,13.010986)" d="M0 0 3.42-.18H.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.475006,13.010986)" d="M0 0H3.9L3.42-.18" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.8350069,13.190979)" d="M0 0 2.7-.12H.54" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.8350069,13.190979)" d="M0 0H3.06L2.7-.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.7350008,13.43103)" d="M0 0H1.2L.9-.06" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.375,13.310974)" d="M0 0 1.56-.12H.36" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,7.375,13.310974)" d="M0 0H2.16L1.56-.12" fill="#ffffff" fill-rule="evenodd"/>
+<path transform="matrix(1,0,0,-1,6.774994,11.750977)" stroke-width=".84" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#000000" d="M0 0V6H2.52L3.42 5.7 3.66 5.4 3.96 4.86V4.26L3.66 3.72 3.42 3.42 2.52 3.12H0"/>
+<path transform="matrix(1,0,0,-1,9.294994,8.630977)" stroke-width=".84" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#000000" d="M0 0 .9-.3 1.14-.54 1.44-1.14V-1.98L1.14-2.58 .9-2.82 0-3.12H-2.52"/>
+<path transform="matrix(1,0,0,-1,13.1349949,8.690979)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="bevel" fill="none" stroke="#000000" d="M0 0-.05999756 .7800293-.2400055 1.559998-1.105515 3.051758-2.29158 4.068787-3.678207 4.621521-5.14537 4.720154-6.573135 4.375061-7.841492 3.596375-8.830429 2.394592-9.419998 .7800293-9.479996 0-9.419998-.7800293-8.830429-2.394592-7.841492-3.596375-6.573135-4.375061-5.14537-4.720154-3.678207-4.621521-2.29158-4.068787-1.105515-3.051758-.2400055-1.559998-.05999756-.7800293Z"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="27.491" height="26.2326" viewBox="0 0 27.491 26.2326">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-455.0912,807.6686)" d="M457.0912 783.436H480.5822V805.6686H457.0912Z"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-455.0912,807.6686)" d="M457.0912 805.6686V783.436H480.5822V805.6686Z" clip-rule="evenodd"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,3.1288453,12.9696049)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="bevel" fill="none" stroke="#0000ff" d="M0 0 .05999756-1.200012 .4417114-3.025085 1.096741-4.713135 2.003174-6.241272 3.13913-7.586609 4.482697-8.726074 6.011963-9.63678 7.705017-10.29572 9.540009-10.67999 10.73999-10.73999 11.94-10.67999 13.07999-10.5 15.76199-9.491577 17.98254-7.922668 19.69739-5.911194 20.86237-3.57489 21.43332-1.031799 21.36603 1.600281 20.61633 4.203552 19.14001 6.659973 18.35999 7.559998 17.45999 8.400024 15.00363 9.861145 12.39435 10.61041 9.753052 10.68787 7.200745 10.13361 4.858337 8.987671 2.846802 7.2901 1.287048 5.080872 .2999878 2.400024 .05999756 1.200012 0 0"/>
+<path transform="matrix(1,0,0,-1,14.528845,12.9696049)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="bevel" fill="none" stroke="#0000ff" d="M0 0-.06 .3-.24 .54-.54 .66H-.78L-1.08 .54-1.26 .3-1.32 0-1.26-.3-1.08-.54-.78-.66H-.54L-.24-.54-.06-.3 0 0Z"/>
+<path transform="matrix(1,0,0,-1,13.868805,13.689575)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0-.06-10.08"/>
+<path transform="matrix(1,0,0,-1,13.148805,12.969575)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0H-10.08"/>
+<path transform="matrix(1,0,0,-1,13.208805,12.729575)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0-8.7 3.6"/>
+<path transform="matrix(1,0,0,-1,13.388805,12.489575)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0-6.66 6.66"/>
+<path transform="matrix(1,0,0,-1,13.568806,12.3695759)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0-3.54 8.7"/>
+<path transform="matrix(1,0,0,-1,13.868806,12.309575)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0V9.42"/>
+<path transform="matrix(1,0,0,-1,14.108806,12.3695759)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 3.6 8.7"/>
+<path transform="matrix(1,0,0,-1,14.348805,12.549576)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 6.66 6.66"/>
+<path transform="matrix(1,0,0,-1,14.468805,12.729576)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 8.7 3.6"/>
+<path transform="matrix(1,0,0,-1,14.528806,12.969576)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 9.42-.06"/>
+<path transform="matrix(1,0,0,-1,14.468805,13.269576)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 8.7-3.6"/>
+<path transform="matrix(1,0,0,-1,14.288805,13.449576)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 6.66-6.72"/>
+<path transform="matrix(1,0,0,-1,14.108805,13.629577)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#0000ff" d="M0 0 3.6-8.7"/>
+<path transform="matrix(1,0,0,-1,13.868805,19.689576)" stroke-width=".72" stroke-linecap="round" stroke-linejoin="bevel" fill="none" stroke="#0000ff" d="M0 0 .9 .06 1.8 .24C6.278 1.452 8.234 7.023 5.4 10.74L4.74 11.46 4.08 12.06C.307 14.925-5.055 13.147-6.48 8.58L-6.66 7.68-6.72 6.72"/>
+</g>
+</g>
+</svg>

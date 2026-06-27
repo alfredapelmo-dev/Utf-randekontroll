@@ -27,9 +27,61 @@ export const DEFAULT_SYMBOL = 'W021';
 // SYMBOL_COMP i iso7010.js måste ha en komponent för varje key.
 // -------------------------------------------------------------------
 export const QUICK_SYMBOLS = [
-  { key: 'F001', label: 'Brandsläckare', kategori: 'Släckutrustning' },
-  { key: 'E001', label: 'Nödutgång', kategori: 'Utrymning' },
+  // Intern kontrollmarkör
+  { key: 'CHECK', label: 'Kontrollerad', kategori: 'Kontroll' },
+
+  // Släckutrustning
+  { key: 'HANDBRANDSLACKARE',     label: 'Handbrandsläckare',    kategori: 'Släckutrustning' },
+  { key: 'INOMHUSBRANDPOST',      label: 'Inomhusbrandpost',     kategori: 'Släckutrustning' },
+
+  // Larm
+  { key: 'LARMTRYCKKNAPP',        label: 'Larmtryckknapp',       kategori: 'Larm' },
+  { key: 'BRANDLARMCENTRAL',      label: 'Brandlarmcentral',     kategori: 'Larm' },
+  { key: 'BRANDVARNARE_DETEKTOR', label: 'Brandvarnare/detektor',kategori: 'Larm' },
+  { key: 'LARMDON',               label: 'Larmdon',              kategori: 'Larm' },
+  { key: 'OPTISKT_LARMDON',       label: 'Optiskt larmdon',      kategori: 'Larm' },
+  { key: 'BLIXTLJUS',             label: 'Blixtljus',            kategori: 'Larm' },
+
+  // Information
+  { key: 'BRANDFORSVARSTABLA',    label: 'Brandförsvastavla',    kategori: 'Information' },
+  { key: 'TECKENFORKLARING',      label: 'Teckenförklaring',     kategori: 'Information' },
+
+  // Ventilation / rökkontroll
+  { key: 'BRANDGASFLAKT',         label: 'Brandgasfläkt',        kategori: 'Ventilation' },
+  { key: 'ROKLUCKA',              label: 'Röklueka',             kategori: 'Ventilation' },
+
+  // Utrymning – skyltning
+  { key: 'GENOMLYST_UTRYMNINGSSKYLT',           label: 'Genomlyst utrymningsskylt',              kategori: 'Utrymning' },
+  { key: 'GENOMLYST_UTRYMNINGSSKYLT_2',         label: 'Genomlyst utrymningsskylt 2',            kategori: 'Utrymning' },
+  { key: 'GENOMLYST_M_RULLSTOLSPICTOGRAM',      label: 'Genomlyst m. rullstolspictogram',        kategori: 'Utrymning' },
+  { key: 'NY_GENOMLYST_UTRYMNINGSSKYLT',        label: 'Ny genomlyst utrymningsskylt',           kategori: 'Utrymning' },
+  { key: 'NY_GENOMLYST_UTRYMNINGSSKYLT_2',      label: 'Ny genomlyst utrymningsskylt 2',         kategori: 'Utrymning' },
+  { key: 'NY_GENOMLYST_M_RULLSTOLSPICTOGRAM',   label: 'Ny genomlyst m. rullstolspictogram',     kategori: 'Utrymning' },
+  { key: 'EFTERLYSANDE_UTRYMNINGSKYLT',         label: 'Efterlysande utrymningsskylt',           kategori: 'Utrymning' },
+  { key: 'NY_EFTERLYSANDE_UTRYMNINGSKYLT',      label: 'Ny efterlysande utrymningsskylt',        kategori: 'Utrymning' },
+  { key: 'EFTERLYSANDE_M_RULLSTOLSPICTOGRAM',   label: 'Efterlysande m. rullstolspictogram',     kategori: 'Utrymning' },
+  { key: 'NY_EFTERLYSANDE_M_RULLSTOLSPICTOGRAM',label: 'Ny efterlysande m. rullstolspictogram',  kategori: 'Utrymning' },
+
+  // Utrymning – vägar och platser
+  { key: 'UTRYMNINGSVAG',              label: 'Utrymningsväg',               kategori: 'Utrymning' },
+  { key: 'TILLTRADESVAG_RADDNINGSTJANST', label: 'Tillträdesväg räddningstjänst', kategori: 'Utrymning' },
+  { key: 'FONSTERUTRYMNING',           label: 'Fönsterutrymning',            kategori: 'Utrymning' },
+  { key: 'UTRYMNING_VIA_BALKONG',      label: 'Utrymning via balkong',       kategori: 'Utrymning' },
+  { key: 'UTRYMNINGSPLATS',            label: 'Utrymningsplats',             kategori: 'Utrymning' },
+  { key: 'UTRYMNINGSPLAN',             label: 'Utrymningsplan',              kategori: 'Utrymning' },
+  { key: 'TRAPPA_FOR_UTRYMNING',       label: 'Trappa för utrymning',        kategori: 'Utrymning' },
+
+  // Dörrar
+  { key: 'ATERINRYMNING_VIA_DORR',     label: 'Återinrymning via dörr',      kategori: 'Dörrar' },
+  { key: 'FRANGANGLIG_DORR',           label: 'Framgånglig dörr',            kategori: 'Dörrar' },
+  { key: 'UPPSTALLNING_AV_DORR',       label: 'Uppställning av dörr',        kategori: 'Dörrar' },
+  { key: 'NODOPPNINGSKNAPP',           label: 'Nödöppningsknapp',            kategori: 'Dörrar' },
 ];
+
+// Snabbsymbol (bock) som bekräftar att något är kontrollerat och OK. Placeras
+// med långtryck (håll ~3 s) på ritningen och lagras som intern markör – kommer,
+// liksom övriga snabbsymboler, ALDRIG med i protokollet.
+export const CHECK_SYMBOL = 'CHECK';
 
 // Avvikelser visas som en flagga (löpnummer) med en flyttbar ledarlinje ner till
 // punkten. Standardläge för flaggan: upp och något åt höger om punkten. Offset i
