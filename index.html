@@ -23,6 +23,9 @@
   <script src="vendor/react-dom.production.min.js"></script>
   <script src="vendor/htm.umd.js"></script>
   <script src="vendor/jspdf.umd.min.js"></script>
+  <!-- pdf.js som UMD-global (window.pdfjsLib) för PDF-import av planritningar.
+       Worker-sökväg sätts i src/pdfImport.js. -->
+  <script src="vendor/pdf.js"></script>
 </head>
 <body>
   <div id="root">

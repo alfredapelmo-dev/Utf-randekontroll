@@ -2,7 +2,7 @@
    vid installation. Allt är lokalt; ingen nätverkstrafik krävs efter första
    laddning. (Registreras endast i säker kontext: https eller localhost.) */
 
-const CACHE = 'utfk-demo-v12';
+const CACHE = 'utfk-demo-v14';
 
 const PRECACHE = [
   './',
@@ -14,6 +14,8 @@ const PRECACHE = [
   'vendor/react-dom.production.min.js',
   'vendor/htm.umd.js',
   'vendor/jspdf.umd.min.js',
+  'vendor/pdf.js',
+  'vendor/pdf.worker.js',
   'vendor/idb.js',
   'vendor/wrap-idb-value.js',
 
@@ -22,6 +24,8 @@ const PRECACHE = [
   'src/ui.js',
   'src/models.js',
   'src/db.js',
+  'src/pdfImport.js',
+  'src/suggestions.js',
   'src/repository.js',
   'src/seed.js',
   'src/iso7010.js',

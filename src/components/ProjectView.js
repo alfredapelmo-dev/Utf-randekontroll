@@ -1,5 +1,6 @@
 import { html, useState, useEffect, useRef } from '../ui.js';
 import { STATUS_COLOR, personName, formatDate, can, newGuid, nowIso } from '../models.js';
+import { loadPdf, renderPageToBlob } from '../pdfImport.js';
 
 // Läser ut en bilds naturliga mått (för korrekt koordinatskala på ritningen).
 function imageSize(blob) {
@@ -21,6 +22,8 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
   const [counts, setCounts] = useState(null);
   const [thumbs, setThumbs] = useState({});
   const [localRefresh, setLocalRefresh] = useState(0);
+  const [converting, setConverting] = useState(null);   // overlay-text under PDF-rendering
+  const [pagePick, setPagePick] = useState(null);        // { numPages, resolve } för sidval
   const fileRef = useRef(null);
   const drawingRef = useRef(null);
 
@@ -57,23 +60,68 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
     return () => { alive = false; urls.forEach((u) => URL.revokeObjectURL(u)); };
   }, [repository, project.ProjektGuid, refreshKey, localRefresh]);
 
+  // Frågar användaren vilka sidor i en flersidig PDF som ska importeras.
+  // Returnerar ett Promise som resolvar med en array sidnummer (eller null = avbryt).
+  function askPages(numPages) {
+    return new Promise((resolve) => setPagePick({ numPages, resolve }));
+  }
+  function resolvePages(pages) {
+    setPagePick((cur) => { if (cur) cur.resolve(pages); return null; });
+  }
+
+  // Importerar en PDF som en eller flera ritningar (en per vald sida). Rastrering
+  // sker i pdfImport.js. Returnerar antal tillagda ritningar.
+  async function importPdf(f) {
+    const { pdf, numPages } = await loadPdf(f);
+    let pages = [1];
+    if (numPages > 1) {
+      pages = await askPages(numPages);
+      if (!pages || !pages.length) return 0;   // avbrutet av användaren
+    }
+    const grund = f.name.replace(/\.[^.]+$/, '') || 'Ritning';
+    let n = 0;
+    setConverting('Konverterar PDF…');
+    try {
+      for (const p of pages) {
+        const { blob, bredd, hojd } = await renderPageToBlob(pdf, p);
+        const namn = numPages > 1 ? `${grund} (sida ${p})` : grund;
+        await repository.saveDrawing({
+          RitningId: newGuid(), ProjektGuid: project.ProjektGuid,
+          namn, blob, bredd, hojd, Created: nowIso(),
+        });
+        n++;
+      }
+    } finally {
+      setConverting(null);
+    }
+    return n;
+  }
+
   async function handleDrawingUpload(e) {
     const files = [...(e.target.files || [])];
     e.target.value = '';
     if (!files.length) return;
+    let added = 0;
     try {
       for (const f of files) {
-        const { w, h } = await imageSize(f);
-        const namn = f.name.replace(/\.[^.]+$/, '') || 'Ritning';
-        await repository.saveDrawing({
-          RitningId: newGuid(), ProjektGuid: project.ProjektGuid,
-          namn, blob: f, bredd: w, hojd: h, Created: nowIso(),
-        });
+        if (f.type === 'application/pdf') {
+          added += await importPdf(f);
+        } else {
+          // Befintlig bildväg (PNG/JPG) – oförändrad.
+          const { w, h } = await imageSize(f);
+          const namn = f.name.replace(/\.[^.]+$/, '') || 'Ritning';
+          await repository.saveDrawing({
+            RitningId: newGuid(), ProjektGuid: project.ProjektGuid,
+            namn, blob: f, bredd: w, hojd: h, Created: nowIso(),
+          });
+          added++;
+        }
       }
-      setLocalRefresh((n) => n + 1);
-      if (toast) toast(files.length === 1 ? 'Ritning tillagd' : `${files.length} ritningar tillagda`);
+      if (toast && added) toast(added === 1 ? 'Ritning tillagd' : `${added} ritningar tillagda`);
     } catch (err) {
-      if (toast) toast('Kunde inte ladda upp ritning: ' + err.message);
+      if (toast) toast('Kunde inte importera ritning: ' + err.message);
+    } finally {
+      if (added) setLocalRefresh((n) => n + 1);
     }
   }
 
@@ -153,7 +201,7 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
         <div class="section-title" style=${{ margin: 0 }}>Planritningar (${drawings.length})</div>
         ${canEdit && html`
           <button class="btn sm primary" onClick=${() => drawingRef.current && drawingRef.current.click()}>+ Ladda upp ritning</button>`}
-        <input ref=${drawingRef} type="file" accept="image/*"
+        <input ref=${drawingRef} type="file" accept="image/*,application/pdf"
                multiple style=${{ display: 'none' }} onChange=${handleDrawingUpload} />
       </div>
       ${drawings.length === 0
@@ -204,6 +252,58 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
                 </div>
               </div>`)}
           </div>`}
+      ${converting && html`
+        <div class="modal-backdrop">
+          <div class="modal" style=${{ maxWidth: '320px', textAlign: 'center' }}>
+            <div class="modal-body"><p style=${{ margin: 0 }}>${converting}</p></div>
+          </div>
+        </div>`}
+
+      ${pagePick && html`
+        <${PdfPageDialog} numPages=${pagePick.numPages}
+          onConfirm=${(pages) => resolvePages(pages)}
+          onCancel=${() => resolvePages(null)} />`}
+    </div>`;
+}
+
+// Sidval för flersidig PDF. Varje vald sida blir en egen ritning. Följer befintlig
+// modalstil (jfr ArchiveDialog).
+function PdfPageDialog({ numPages, onConfirm, onCancel }) {
+  const pages = Array.from({ length: numPages }, (_, i) => i + 1);
+  const [sel, setSel] = useState(() => new Set([1]));
+  const allSelected = sel.size === numPages;
+  const toggle = (p) => setSel((s) => { const n = new Set(s); n.has(p) ? n.delete(p) : n.add(p); return n; });
+  const toggleAll = () => setSel(allSelected ? new Set() : new Set(pages));
+
+  return html`
+    <div class="modal-backdrop" onClick=${onCancel}>
+      <div class="modal" style=${{ maxWidth: '420px' }} onClick=${(e) => e.stopPropagation()}>
+        <div class="modal-head">
+          <h2>Välj sidor att importera</h2>
+          <button class="x" onClick=${onCancel} aria-label="Stäng">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted" style=${{ marginTop: 0 }}>
+            PDF:en har ${numPages} sidor. Varje vald sida blir en egen ritning.
+          </p>
+          <label style=${{ display: 'flex', gap: '8px', alignItems: 'center', fontWeight: 600, marginBottom: '8px' }}>
+            <input type="checkbox" checked=${allSelected} onChange=${toggleAll} /> Markera alla
+          </label>
+          <div style=${{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', maxHeight: '220px', overflow: 'auto' }}>
+            ${pages.map((p) => html`
+              <label key=${p} style=${{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <input type="checkbox" checked=${sel.has(p)} onChange=${() => toggle(p)} /> Sida ${p}
+              </label>`)}
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn ghost" onClick=${onCancel}>Avbryt</button>
+          <button class="btn primary" disabled=${sel.size === 0}
+                  onClick=${() => onConfirm([...sel].sort((a, b) => a - b))}>
+            Importera${sel.size > 0 ? ` (${sel.size})` : ''}
+          </button>
+        </div>
+      </div>
     </div>`;
 }
 

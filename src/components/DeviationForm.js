@@ -4,6 +4,7 @@ import {
   can, allowedStatusesFor, newGuid, personName, formatDate,
   SYMBOLS, DEFAULT_SYMBOL,
 } from '../models.js';
+import { buildSuggestionCorpus, rankSuggestions } from '../suggestions.js';
 
 // Avvikelseformulär – skapa/redigera med alla fält + GUID. Foto från
 // kamera/bibliotek lagras som Blob. Status (Öppen→Åtgärdad→Verifierad) styr
@@ -25,6 +26,11 @@ export function DeviationForm({ repository, project, role, deviation, onClose, t
   const [busy, setBusy] = useState(false);
   const urlsRef = useRef([]);
 
+  // Rubrikförslag (utifrån redan ifyllda brister + inbyggd startlista).
+  const [corpus, setCorpus] = useState([]);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [activeSug, setActiveSug] = useState(-1);
+
   const members = project.Medlemmar || [];
   const editCore = can(role, 'editCore');
   const editDesc = can(role, 'editDescription');
@@ -34,6 +40,34 @@ export function DeviationForm({ repository, project, role, deviation, onClose, t
   const canDelete = can(role, 'deleteDeviation') && !isNew;
 
   function set(key, value) { setForm((f) => ({ ...f, [key]: value })); setChanged(true); }
+
+  // ---- Rubrikförslag: bygg korpusen en gång när formuläret öppnas (per projekt).
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const c = await buildSuggestionCorpus(repository, deviation.ProjektGuid || project.ProjektGuid);
+      if (alive) setCorpus(c);
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line
+  }, [repository, project.ProjektGuid]);
+
+  // Aktuella förslag rangordnas synkront per tangenttryck mot korpusen.
+  const suggestions = editCore ? rankSuggestions(form.Title, corpus, 6) : [];
+  const showSuggest = suggestOpen && suggestions.length > 0;
+
+  function chooseSuggestion(text) {
+    set('Title', text);
+    setSuggestOpen(false);
+    setActiveSug(-1);
+  }
+  function onTitleKey(e) {
+    if (!showSuggest) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSug((i) => Math.min(i + 1, suggestions.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSug((i) => Math.max(i - 1, -1)); }
+    else if (e.key === 'Enter' && activeSug >= 0) { e.preventDefault(); chooseSuggestion(suggestions[activeSug].text); }
+    else if (e.key === 'Escape') { setSuggestOpen(false); setActiveSug(-1); }
+  }
 
   // ---- Ladda foton för (sparad) avvikelse
   async function loadPhotos() {
@@ -122,11 +156,25 @@ export function DeviationForm({ repository, project, role, deviation, onClose, t
         </div>
 
         <div class="modal-body">
-          <div class="field">
+          <div class="field suggest-wrap">
             <label htmlFor="f-title">Rubrik *</label>
             <input id="f-title" type="text" value=${form.Title} disabled=${!editCore}
-                   placeholder="t.ex. Blockerad utrymningsväg"
-                   onInput=${(e) => set('Title', e.target.value)} />
+                   placeholder="t.ex. Blockerad utrymningsväg" autocomplete="off"
+                   role="combobox" aria-expanded=${showSuggest} aria-autocomplete="list"
+                   onInput=${(e) => { set('Title', e.target.value); setSuggestOpen(true); setActiveSug(-1); }}
+                   onFocus=${() => setSuggestOpen(true)}
+                   onBlur=${() => setTimeout(() => setSuggestOpen(false), 120)}
+                   onKeyDown=${onTitleKey} />
+            ${showSuggest && html`
+              <ul class="suggest-list" role="listbox">
+                ${suggestions.map((s, i) => html`
+                  <li key=${s.text} role="option" aria-selected=${i === activeSug}
+                      class=${'suggest-item' + (i === activeSug ? ' active' : '')}
+                      onMouseDown=${(e) => { e.preventDefault(); chooseSuggestion(s.text); }}>
+                    <span class="suggest-text">${highlightMatch(s.text, form.Title)}</span>
+                    ${s.source === 'historik' ? html`<span class="suggest-tag">tidigare</span>` : null}
+                  </li>`)}
+              </ul>`}
           </div>
 
           <div class="field">
@@ -221,4 +269,13 @@ export function DeviationForm({ repository, project, role, deviation, onClose, t
         </div>
       </div>
     </div>`;
+}
+
+// Fetmarkerar den matchande delen av ett förslag (rent textbaserat, ingen HTML).
+function highlightMatch(text, query) {
+  const q = (query || '').trim();
+  if (!q) return text;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx < 0) return text;
+  return html`${text.slice(0, idx)}<strong>${text.slice(idx, idx + q.length)}</strong>${text.slice(idx + q.length)}`;
 }

@@ -366,6 +366,26 @@ button { font-family: inherit; }
 .field .readout { font-size: 13px; color: var(--ink); background: #eef1f4; border-radius: 8px; padding: 8px 10px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+/* Rubrikförslag (autocomplete) */
+.suggest-wrap { position: relative; }
+.suggest-list {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 20; margin: 4px 0 0;
+  list-style: none; padding: 4px; background: #fff; border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: var(--shadow-lg); max-height: 240px; overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.suggest-item {
+  display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px;
+  font-size: 14px; color: var(--ink); cursor: pointer;
+}
+.suggest-item:hover, .suggest-item.active { background: #fdecec; }
+.suggest-item .suggest-text { flex: 1; min-width: 0; }
+.suggest-item .suggest-text strong { color: var(--brand-dark); }
+.suggest-tag {
+  flex: none; font-size: 11px; font-weight: 600; color: var(--muted);
+  background: #eef1f4; border-radius: 999px; padding: 2px 8px;
+}
+
 .status-picker { display: flex; gap: 8px; flex-wrap: wrap; }
 .status-opt {
   border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 12px;
