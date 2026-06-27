@@ -33,6 +33,11 @@ export class Repository {
   async listDrawings() { throw new Error('not implemented'); }
   /* Synk (demonstrerar offline-first; ingen nätverkstrafik i demon) */
   async listSyncQueue() { throw new Error('not implemented'); }
+  /* Arkivering */
+  async archiveProject(projektGuid) { throw new Error('not implemented'); }
+  async listArchives() { throw new Error('not implemented'); }
+  async restoreProject(projektGuid) { throw new Error('not implemented'); }
+  async exportArchiveAsZip(projektGuid) { throw new Error('not implemented'); }
 }
 
 export class LocalRepository extends Repository {
@@ -175,6 +180,131 @@ export class LocalRepository extends Repository {
 
   async listDrawings() {
     return (await getDB()).getAll('drawings');
+  }
+
+  // ---------------------------------------------------------- Arkivering
+  async archiveProject(projektGuid) {
+    const db = await getDB();
+    const projekt = await db.get('projects', projektGuid);
+    if (!projekt) throw new Error('Projekt hittades inte');
+
+    const avvikelser = await db.getAllFromIndex('deviations', 'by-projekt', projektGuid);
+    const foton = (await Promise.all(
+      avvikelser.map((a) => db.getAllFromIndex('photos', 'by-avvikelse', a.AvvikelseGuid))
+    )).flat();
+    const ritningIds = [...new Set(avvikelser.map((a) => a.RitningId).filter(Boolean))];
+    const ritningar = (await Promise.all(ritningIds.map((id) => db.get('drawings', id)))).filter(Boolean);
+
+    const archivedAt = nowIso();
+    const archive = {
+      ProjektGuid: projektGuid,
+      ArchivedDate: archivedAt,
+      _schema: 1,
+      projekt,
+      avvikelser,
+      foton,
+      ritningar,
+    };
+
+    const tx = db.transaction(['archives', 'deviations', 'photos', 'projects'], 'readwrite');
+    await tx.objectStore('archives').put(archive);
+    for (const a of avvikelser) await tx.objectStore('deviations').delete(a.AvvikelseGuid);
+    for (const f of foton) await tx.objectStore('photos').delete(f.id);
+    const updatedProjekt = { ...projekt, Status: 'Arkiverad', Modified: archivedAt, _dirty: true };
+    await tx.objectStore('projects').put(updatedProjekt);
+    await tx.done;
+
+    await this._enqueue('project', projektGuid, 'update');
+    return { ok: true, archivedAt };
+  }
+
+  async listArchives() {
+    const db = await getDB();
+    const all = await db.getAll('archives');
+    return all.map(({ ProjektGuid, ArchivedDate, projekt }) => ({
+      ProjektGuid,
+      ArchivedDate,
+      Title: projekt.Title,
+      Kund: projekt.Kund,
+      Adress: projekt.Adress,
+      Status: projekt.Status,
+    })).sort((a, b) => String(a.Title || '').localeCompare(String(b.Title || ''), 'sv'));
+  }
+
+  async restoreProject(projektGuid) {
+    const db = await getDB();
+    const archive = await db.get('archives', projektGuid);
+    if (!archive) throw new Error('Arkivet hittades inte');
+
+    const now = nowIso();
+    const tx = db.transaction(['archives', 'deviations', 'photos', 'projects', 'drawings'], 'readwrite');
+    const restoredProjekt = { ...archive.projekt, Status: 'Pågående', Modified: now, _dirty: true };
+    await tx.objectStore('projects').put(restoredProjekt);
+    for (const a of archive.avvikelser) await tx.objectStore('deviations').put(a);
+    for (const f of archive.foton) await tx.objectStore('photos').put(f);
+    for (const r of archive.ritningar) await tx.objectStore('drawings').put(r);
+    await tx.objectStore('archives').delete(projektGuid);
+    await tx.done;
+
+    await this._enqueue('project', projektGuid, 'update');
+    return { ok: true };
+  }
+
+  async exportArchiveAsZip(projektGuid) {
+    // Demo: bygg ZIP i webbläsaren från archives-store.
+    // Beta: hämta befintlig ZIP direkt från SharePoint Document Library.
+    const db = await getDB();
+    const archive = await db.get('archives', projektGuid);
+    if (!archive) throw new Error('Arkivet hittades inte');
+
+    // Konvertera Blob → base64 för JSON-säker inbäddning
+    async function blobToBase64(blob) {
+      if (!blob) return null;
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    const fotoData = await Promise.all(
+      archive.foton.map(async (f) => ({
+        ...f,
+        blob: undefined,
+        _b64: await blobToBase64(f.blob),
+        _mime: f.blob ? f.blob.type : 'image/jpeg',
+      }))
+    );
+    const ritningData = await Promise.all(
+      archive.ritningar.map(async (r) => ({
+        ...r,
+        blob: undefined,
+        _b64: await blobToBase64(r.blob),
+        _mime: r.blob ? r.blob.type : 'image/png',
+      }))
+    );
+
+    const manifest = {
+      _schema: archive._schema,
+      exportedAt: nowIso(),
+      ProjektGuid: archive.ProjektGuid,
+      ArchivedDate: archive.ArchivedDate,
+      counts: {
+        avvikelser: archive.avvikelser.length,
+        foton: archive.foton.length,
+        ritningar: archive.ritningar.length,
+      },
+    };
+
+    const payload = JSON.stringify({
+      manifest,
+      projekt: archive.projekt,
+      avvikelser: archive.avvikelser,
+      foton: fotoData,
+      ritningar: ritningData,
+    }, null, 2);
+
+    return new Blob([payload], { type: 'application/json' });
   }
 
   // ---------------------------------------------------------- Synk

@@ -364,3 +364,59 @@ button { font-family: inherit; }
 .muted { color: var(--muted); }
 .spacer { flex: 1; }
 .nowrap { white-space: nowrap; }
+
+/* --------------------------------------------------- Hemvy */
+.home-actions { display: grid; gap: 10px; margin-top: 6px; }
+
+/* --------------------------------------------------- Stjärnknapp */
+.star-btn {
+  appearance: none; border: 0; background: none; padding: 0;
+  font-size: 22px; line-height: 1; cursor: pointer;
+  color: #c9d0d8; flex-shrink: 0; margin-top: 1px;
+  transition: color .15s, transform .1s;
+}
+.star-btn:active { transform: scale(1.25); }
+.star-btn.starred { color: #f5a623; }
+
+/* --------------------------------------------------- Projektläsare */
+.browser-toolbar {
+  display: flex; flex-direction: column; gap: 10px;
+}
+@media (min-width: 560px) {
+  .browser-toolbar { flex-direction: row; align-items: center; }
+}
+
+.search-wrap {
+  position: relative; flex: 1;
+}
+.search-icon {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; pointer-events: none;
+}
+.search-input {
+  width: 100%; border: 1px solid var(--line); border-radius: 12px;
+  padding: 11px 12px 11px 36px; font-size: 16px;
+  background: #fff; color: var(--ink); font-family: inherit;
+  -webkit-appearance: none;
+}
+.search-input:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+
+/* --------------------------------------------------- Arkiv */
+.archive-toggle {
+  appearance: none; border: 0; background: none; width: 100%; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 2px 6px; font-size: 13px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .6px; font-family: inherit;
+}
+.archive-toggle:active { opacity: .7; }
+.archive-chevron { font-size: 18px; transition: transform .2s; display: inline-block; }
+.archive-chevron.open { transform: rotate(90deg); }
+
+.archive-card { opacity: .85; }
+.archive-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+
+.archive-info {
+  background: #f8f9fb; border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; display: grid; gap: 6px;
+}
+.archive-info-row { font-size: 13px; color: var(--ink); }

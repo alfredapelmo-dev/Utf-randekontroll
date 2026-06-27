@@ -2,7 +2,7 @@
    vid installation. Allt är lokalt; ingen nätverkstrafik krävs efter första
    laddning. (Registreras endast i säker kontext: https eller localhost.) */
 
-const CACHE = 'utfk-demo-v6';
+const CACHE = 'utfk-demo-v8';
 
 const PRECACHE = [
   './',
@@ -27,6 +27,8 @@ const PRECACHE = [
   'src/pdf.js',
   'src/components/App.js',
   'src/components/ProjectList.js',
+  'src/components/ProjectBrowser.js',
+  'src/components/ArchiveDialog.js',
   'src/components/DrawingView.js',
   'src/components/DeviationForm.js',
   'src/components/Protocol.js',
@@ -75,8 +77,10 @@ self.addEventListener('fetch', (event) => {
         if (res && res.ok && res.type === 'basic') {
           const copy = res.clone();
           caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
+          return res;
         }
-        return res;
+        // Servern svarade med fel (t.ex. 404 när hosting är nere) – fall tillbaka på cache
+        throw new Error('bad response');
       })
       .catch(() => caches.match(req).then((hit) => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
   );
