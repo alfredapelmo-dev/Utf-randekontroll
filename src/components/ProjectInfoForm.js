@@ -1,9 +1,11 @@
 import { html, useState } from '../ui.js';
 import { PROJECT_STATUS } from '../models.js';
 
-// Redigera projektinformation. Sparar via repository.saveProject (sätter _dirty
-// och köar synk – samma väg som beta använder mot SharePoint).
+// Skapa eller redigera projektinformation. Sparar via repository.saveProject
+// (sätter _dirty och köar synk – samma väg som beta använder mot SharePoint).
+// Nytt projekt = project saknar ProjektGuid; saveProject genererar då ett GUID.
 export function ProjectInfoForm({ repository, project, onClose, toast }) {
+  const isNew = !project.ProjektGuid;
   const [form, setForm] = useState({
     Title: project.Title || '',
     Kund: project.Kund || '',
@@ -20,7 +22,7 @@ export function ProjectInfoForm({ repository, project, onClose, toast }) {
     setBusy(true);
     try {
       const saved = await repository.saveProject({ ...project, ...form, Title: form.Title.trim() });
-      if (toast) toast('Projektinformation sparad');
+      if (toast) toast(isNew ? 'Projekt skapat' : 'Projektinformation sparad');
       onClose(saved);
     } catch (e) {
       if (toast) toast('Kunde inte spara: ' + e.message);
@@ -32,7 +34,7 @@ export function ProjectInfoForm({ repository, project, onClose, toast }) {
     <div class="modal-backdrop" onClick=${() => onClose(null)}>
       <div class="modal" onClick=${(e) => e.stopPropagation()}>
         <div class="modal-head">
-          <h2>Redigera projekt</h2>
+          <h2>${isNew ? 'Nytt projekt' : 'Redigera projekt'}</h2>
           <button class="x" onClick=${() => onClose(null)} aria-label="Stäng">✕</button>
         </div>
         <div class="modal-body">
@@ -63,7 +65,7 @@ export function ProjectInfoForm({ repository, project, onClose, toast }) {
         </div>
         <div class="modal-foot">
           <button class="btn ghost" onClick=${() => onClose(null)} disabled=${busy}>Avbryt</button>
-          <button class="btn primary" onClick=${save} disabled=${busy}>${busy ? 'Sparar…' : 'Spara'}</button>
+          <button class="btn primary" onClick=${save} disabled=${busy}>${busy ? (isNew ? 'Skapar…' : 'Sparar…') : (isNew ? 'Skapa projekt' : 'Spara')}</button>
         </div>
       </div>
     </div>`;

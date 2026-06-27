@@ -1,5 +1,16 @@
 import { html, useState, useEffect, useRef } from '../ui.js';
-import { STATUS_COLOR, personName, formatDate, can } from '../models.js';
+import { STATUS_COLOR, personName, formatDate, can, newGuid, nowIso } from '../models.js';
+
+// Läser ut en bilds naturliga mått (för korrekt koordinatskala på ritningen).
+function imageSize(blob) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { resolve({ w: img.naturalWidth, h: img.naturalHeight }); URL.revokeObjectURL(url); };
+    img.onerror = () => { resolve({ w: 1600, h: 1120 }); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+}
 
 // Projektöversikt – nav mellan projektlista och ritningsvy. Visar projektinfo
 // (redigerbar), projektets planritningar, dokumentation (brandskyddsbeskrivning
@@ -9,7 +20,9 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
   const [documents, setDocuments] = useState([]);
   const [counts, setCounts] = useState(null);
   const [thumbs, setThumbs] = useState({});
+  const [localRefresh, setLocalRefresh] = useState(0);
   const fileRef = useRef(null);
+  const drawingRef = useRef(null);
 
   async function reloadDocs() {
     setDocuments(await repository.listDocuments(project.ProjektGuid));
@@ -42,7 +55,27 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
       if (alive) setThumbs(t);
     })();
     return () => { alive = false; urls.forEach((u) => URL.revokeObjectURL(u)); };
-  }, [repository, project.ProjektGuid, refreshKey]);
+  }, [repository, project.ProjektGuid, refreshKey, localRefresh]);
+
+  async function handleDrawingUpload(e) {
+    const files = [...(e.target.files || [])];
+    e.target.value = '';
+    if (!files.length) return;
+    try {
+      for (const f of files) {
+        const { w, h } = await imageSize(f);
+        const namn = f.name.replace(/\.[^.]+$/, '') || 'Ritning';
+        await repository.saveDrawing({
+          RitningId: newGuid(), ProjektGuid: project.ProjektGuid,
+          namn, blob: f, bredd: w, hojd: h, Created: nowIso(),
+        });
+      }
+      setLocalRefresh((n) => n + 1);
+      if (toast) toast(files.length === 1 ? 'Ritning tillagd' : `${files.length} ritningar tillagda`);
+    } catch (err) {
+      if (toast) toast('Kunde inte ladda upp ritning: ' + err.message);
+    }
+  }
 
   async function handleUpload(e) {
     const files = [...(e.target.files || [])];
@@ -116,7 +149,13 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
         </div>`}
 
       ${/* ---- Planritningar ---- */ ''}
-      <div class="section-title" style=${{ marginTop: '18px' }}>Planritningar (${drawings.length})</div>
+      <div class="docs-head">
+        <div class="section-title" style=${{ margin: 0 }}>Planritningar (${drawings.length})</div>
+        ${canEdit && html`
+          <button class="btn sm primary" onClick=${() => drawingRef.current && drawingRef.current.click()}>+ Ladda upp ritning</button>`}
+        <input ref=${drawingRef} type="file" accept="image/*"
+               multiple style=${{ display: 'none' }} onChange=${handleDrawingUpload} />
+      </div>
       ${drawings.length === 0
         ? html`<div class="empty"><p class="muted">Inga ritningar i projektet.</p></div>`
         : html`

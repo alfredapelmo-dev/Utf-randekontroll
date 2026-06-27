@@ -97,13 +97,18 @@ export function App() {
 
   function closeForm(changed) { setSelectedDeviation(null); if (changed) bump(); }
   function closeProtocol() { setShowProtocol(false); }
-  function handleAddNew() { toast('Skapa projekt kommer i beta-versionen.'); }
+
+  // Skapa nytt projekt = öppna projektformuläret med en tom mall (utan
+  // ProjektGuid). saveProject genererar GUID och köar synk lokalt.
+  function handleAddNew() { setEditInfo({ Status: 'Pågående' }); }
 
   function closeEditInfo(saved) {
+    const wasNew = editInfo && !editInfo.ProjektGuid;
     setEditInfo(null);
     if (saved) {
       setActiveProject((p) => (p && p.ProjektGuid === saved.ProjektGuid ? saved : p));
       bump();
+      if (wasNew) openProject(saved); // hoppa direkt in i det nya projektet
     }
   }
 
