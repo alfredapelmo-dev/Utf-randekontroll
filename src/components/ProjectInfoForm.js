@@ -1,11 +1,19 @@
-import { html, useState } from '../ui.js';
+import { html, useState, useRef } from '../ui.js';
 import { PROJECT_STATUS } from '../models.js';
+// DEMOFUNKTION – tas bort vid aktivering av synk
+import { importProjekt } from '../importProjekt.js';
 
 // Skapa eller redigera projektinformation. Sparar via repository.saveProject
 // (sätter _dirty och köar synk – samma väg som beta använder mot SharePoint).
 // Nytt projekt = project saknar ProjektGuid; saveProject genererar då ett GUID.
 export function ProjectInfoForm({ repository, project, onClose, toast }) {
   const isNew = !project.ProjektGuid;
+  // DEMOFUNKTION – tas bort vid aktivering av synk
+  // Visa importknapp bara på datorer (pekare = mus, inte fingrar)
+  const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const importRef = useRef(null);
+  const [importing, setImporting] = useState(false);
+
   const [form, setForm] = useState({
     Title: project.Title || '',
     Kund: project.Kund || '',
@@ -16,6 +24,21 @@ export function ProjectInfoForm({ repository, project, onClose, toast }) {
   const [busy, setBusy] = useState(false);
 
   function set(field, val) { setForm((f) => ({ ...f, [field]: val })); }
+
+  // DEMOFUNKTION – tas bort vid aktivering av synk
+  async function handleImport(e) {
+    const fil = e.target.files?.[0];
+    e.target.value = '';
+    if (!fil) return;
+    setImporting(true);
+    try {
+      const sparat = await importProjekt(repository, fil, toast);
+      onClose(sparat);
+    } catch (fel) {
+      if (toast) toast('Importfel: ' + fel.message);
+      setImporting(false);
+    }
+  }
 
   async function save() {
     if (!form.Title.trim()) { if (toast) toast('Projektnamn krävs'); return; }
@@ -64,8 +87,17 @@ export function ProjectInfoForm({ repository, project, onClose, toast }) {
           </div>
         </div>
         <div class="modal-foot">
-          <button class="btn ghost" onClick=${() => onClose(null)} disabled=${busy}>Avbryt</button>
-          <button class="btn primary" onClick=${save} disabled=${busy}>${busy ? (isNew ? 'Skapar…' : 'Sparar…') : (isNew ? 'Skapa projekt' : 'Spara')}</button>
+          ${/* DEMOFUNKTION – tas bort vid aktivering av synk */ ''}
+          ${isNew && isDesktop && html`
+            <button class="btn ghost" style=${{ marginRight: 'auto' }}
+                    onClick=${() => importRef.current && importRef.current.click()}
+                    disabled=${importing || busy}>
+              ${importing ? 'Importerar…' : '📥 Importera projekt från telefon'}
+            </button>
+            <input ref=${importRef} type="file" accept=".zip,application/zip"
+                   style=${{ display: 'none' }} onChange=${handleImport} />`}
+          <button class="btn ghost" onClick=${() => onClose(null)} disabled=${busy || importing}>Avbryt</button>
+          <button class="btn primary" onClick=${save} disabled=${busy || importing}>${busy ? (isNew ? 'Skapar…' : 'Sparar…') : (isNew ? 'Skapa projekt' : 'Spara')}</button>
         </div>
       </div>
     </div>`;

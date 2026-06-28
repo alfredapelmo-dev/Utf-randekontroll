@@ -1,6 +1,8 @@
 import { html, useState, useEffect, useRef } from '../ui.js';
 import { STATUS_COLOR, personName, formatDate, can, newGuid, nowIso } from '../models.js';
 import { loadPdf, renderPageToBlob } from '../pdfImport.js';
+// DEMOFUNKTION – tas bort vid aktivering av synk
+import { sendProjekt } from '../sendProjekt.js';
 
 // Läser ut en bilds naturliga mått (för korrekt koordinatskala på ritningen).
 function imageSize(blob) {
@@ -23,6 +25,8 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
   const [thumbs, setThumbs] = useState({});
   const [localRefresh, setLocalRefresh] = useState(0);
   const [converting, setConverting] = useState(null);   // overlay-text under PDF-rendering
+  // DEMOFUNKTION – tas bort vid aktivering av synk
+  const [sending, setSending] = useState(false);
   const [pagePick, setPagePick] = useState(null);        // { numPages, resolve } för sidval
   const fileRef = useRef(null);
   const drawingRef = useRef(null);
@@ -155,6 +159,18 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
     if (toast) toast('Dokument borttaget');
   }
 
+  // DEMOFUNKTION – tas bort vid aktivering av synk
+  async function handleSendProjekt() {
+    setSending(true);
+    try {
+      await sendProjekt(repository, project, toast);
+    } catch (fel) {
+      if (toast) toast('Kunde inte skicka projektet: ' + fel.message);
+    } finally {
+      setSending(false);
+    }
+  }
+
   const canEdit = can(role, 'editCore');
   const canArchive = project.Status === 'Avslutad';
 
@@ -180,6 +196,10 @@ export function ProjectView({ repository, project, role, refreshKey, onOpenDrawi
         <div class="project-header-actions">
           ${canEdit && html`<button class="btn sm" onClick=${() => onEditInfo(project)}>✏️ Redigera information</button>`}
           ${canArchive && html`<button class="btn sm danger" onClick=${() => onArchive(project)}>📦 Arkivera projekt</button>`}
+          ${/* DEMOFUNKTION – tas bort vid aktivering av synk */ ''}
+          <button class="btn sm" onClick=${handleSendProjekt} disabled=${sending}>
+            ${sending ? 'Förbereder…' : '📤 Skicka projekt'}
+          </button>
         </div>
       </div>
 

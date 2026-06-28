@@ -26,6 +26,10 @@
   <!-- pdf.js som UMD-global (window.pdfjsLib) för PDF-import av planritningar.
        Worker-sökväg sätts i src/pdfImport.js. -->
   <script src="vendor/pdf.js"></script>
+  <!-- DEMOFUNKTION – tas bort vid aktivering av synk
+       JSZip används av sendProjekt/importProjekt för att paketera och packa upp projekt-ZIP.
+       Kräver internetåtkomst vid första laddning (cachas sedan av service worker). -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
   <div id="root">
